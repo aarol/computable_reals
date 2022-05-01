@@ -1,3 +1,4 @@
+import 'operators/sqrt.dart';
 import 'precision_vm.dart' if (dart.library.html) 'precision_js.dart'
     as platform;
 
@@ -22,15 +23,14 @@ abstract class CReal {
     s = s.trim();
     final len = s.length;
     var fraction = '0';
-    var dotPosition = s.indexOf('.');
-    if (dotPosition == -1) {
-      dotPosition = len;
+    var pointPosition = s.indexOf('.');
+    if (pointPosition == -1) {
+      pointPosition = len;
     } else {
-      fraction = s.substring(dotPosition + 1);
+      fraction = s.substring(pointPosition + 1);
     }
-    final whole = s.substring(0, dotPosition);
-    final scaledResult = BigInt.from(int.parse(whole + fraction));
-    print(scaledResult.toString());
+    final whole = s.substring(0, pointPosition);
+    final scaledResult = BigInt.parse(whole + fraction);
     final divisor = BigInt.from(10).pow(fraction.length);
     return CReal._fromBigInt(scaledResult).divide(CReal._fromBigInt(divisor));
   }
@@ -49,6 +49,10 @@ abstract class CReal {
 
   CReal negate() {
     return NegCReal(this);
+  }
+
+  CReal sqrt() {
+    return SqrtCReal(this);
   }
 
   BigInt getApproximation(int precision) {
@@ -103,7 +107,8 @@ abstract class CReal {
     if (maxApproximation! >= BigInt.zero) {
       length = maxApproximation!.bitLength;
     } else {
-      length = -maxApproximation!.bitLength;
+      // negative numbers are stored differently
+      length = (-maxApproximation!).bitLength;
     }
     return minimumPrecision! + length - 1;
   }
@@ -111,8 +116,8 @@ abstract class CReal {
   /// Returns the position of the most significant digit
   int msd(int precision) {
     if (!isApproximationValid ||
-        (maxApproximation != null && maxApproximation! < BigInt.one) &&
-            (-BigInt.one + maxApproximation!) >= BigInt.zero) {
+        (maxApproximation != null && maxApproximation! <= BigInt.one) &&
+            (maxApproximation!) >= -BigInt.one) {
       getApproximation(precision - 1);
       if (maxApproximation!.abs() <= BigInt.one) {
         return intMinValue;
@@ -132,8 +137,7 @@ abstract class CReal {
     return msd(precision);
   }
 
-  String toStringPrecision(int precision, [int? radix]) {
-    radix ??= 10;
+  String toStringPrecision(int precision, [int radix = 10]) {
     final scaleFactor = BigInt.from(radix).pow(precision);
     final scaledCReal = multiply(IntCReal(scaleFactor));
     final scaledInt = scaledCReal.getApproximation(0);

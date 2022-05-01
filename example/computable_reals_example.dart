@@ -1,6 +1,6 @@
 import 'package:computable_reals/computable_reals.dart';
 
 void main() {
-  var cr = CReal.fromString('1.5');
-  print(cr.toStringPrecision(10, 10));
+  var cr = CReal.fromInt(-15);
+  print(cr.toStringPrecision(1, 10));
 }
