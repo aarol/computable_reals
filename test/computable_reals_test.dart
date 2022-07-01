@@ -17,6 +17,7 @@ void main() {
   });
   group('fromString', () {
     const m = {
+      // Exact input/output : Precision
       '15': 0,
       '-15': 0,
       '-1.51234': 5,
@@ -28,14 +29,18 @@ void main() {
     };
     for (var e in m.entries) {
       test(e.key, () {
-        var cr = CReal.fromString(e.key);
+        var cr = CReal.parse(e.key);
         expect(cr.toStringPrecision(e.value), e.key);
       });
     }
   });
 
   group('operators', () {
-    const sqrts = {9: "3", 1: "1", 25: "5"};
+    const sqrts = {
+      9: "3",
+      1: "1",
+      25: "5",
+    };
     for (var e in sqrts.entries) {
       test('int sqrt(${e.key})', () {
         var cr = CReal.fromInt(e.key);
@@ -46,6 +51,7 @@ void main() {
       var cr = CReal.fromInt(-9).sqrt();
       expect(() => cr.toStringPrecision(0), throwsException);
     });
+
     const m = {
       2: "1.41421",
       3: "1.73205",
