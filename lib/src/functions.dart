@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'creal.dart';
 
-class SqrtCReal extends CReal {
+class SqrtCReal extends CRealImpl {
   SqrtCReal(this.x, [int? minP, BigInt? maxAppr]) {
     if (minP != null) {
       minimumPrecision = minP;
@@ -10,7 +10,7 @@ class SqrtCReal extends CReal {
       isApproximationValid = true;
     }
   }
-  final CReal x;
+  final CRealImpl x;
 
   static const fpPrecision = 50;
   static const fpOperatorPrecision = 60;
@@ -35,7 +35,7 @@ class SqrtCReal extends CReal {
       final productPrecisionScaledNumerator =
           lastAppr * lastAppr + operatorAppr;
       final scaledNumerator =
-          CReal.scale(productPrecisionScaledNumerator, apprPrecision - p);
+          CRealImpl.scale(productPrecisionScaledNumerator, apprPrecision - p);
       final shiftedResult = scaledNumerator ~/ lastAppr;
       return (shiftedResult + BigInt.one) >> 1;
     } else {
@@ -50,7 +50,7 @@ class SqrtCReal extends CReal {
       final scaledFpSqrt = sqrt(scaledAppr);
       final scaledSqrt = BigInt.from(scaledFpSqrt);
       final shiftCount = (workingPrecision / 2).floor() - p;
-      return CReal.shift(scaledSqrt, shiftCount);
+      return CRealImpl.shift(scaledSqrt, shiftCount);
     }
   }
 }

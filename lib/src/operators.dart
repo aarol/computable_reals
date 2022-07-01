@@ -1,21 +1,22 @@
 import 'computable_reals_base.dart';
+import 'creal.dart';
 
-class AddCReal extends CReal {
+class AddCReal extends CRealImpl {
   AddCReal(this.x, this.y);
-  final CReal x;
-  final CReal y;
+  final CRealImpl x;
+  final CRealImpl y;
 
   @override
   BigInt approximate(int p) {
-    return CReal.scale(
+    return CRealImpl.scale(
         x.getApproximation(p - 2) + y.getApproximation(p - 2), -2);
   }
 }
 
-class MultCReal extends CReal {
+class MultCReal extends CRealImpl {
   MultCReal(this.x, this.y);
-  CReal x;
-  CReal y;
+  CRealImpl x;
+  CRealImpl y;
 
   @override
   BigInt approximate(int p) {
@@ -45,13 +46,13 @@ class MultCReal extends CReal {
     final precision1 = p - msdY - 3;
     final approximationX = x.getApproximation(precision1);
     final scaleDigits = precision1 + precision2 - p;
-    return CReal.scale(approximationX * approximationY, scaleDigits);
+    return CRealImpl.scale(approximationX * approximationY, scaleDigits);
   }
 }
 
-class ShiftedCReal extends CReal {
+class ShiftedCReal extends CRealImpl {
   ShiftedCReal(this.x, this.count);
-  final CReal x;
+  final CRealImpl x;
   final int count;
 
   @override

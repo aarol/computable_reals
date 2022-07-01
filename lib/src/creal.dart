@@ -8,24 +8,46 @@ import 'values.dart';
 import 'package:meta/meta.dart';
 
 abstract class CReal {
-  CReal();
+  factory CReal.fromInt(int i) = CRealImpl.fromInt;
+  factory CReal.fromBigInt(BigInt i) = CRealImpl.fromBigInt;
+  factory CReal.parse(String s) = CRealImpl.parse;
+  CReal? tryParse(String s);
 
-  @internal
+  CReal operator +(CReal x);
+  CReal operator -(CReal x);
+  CReal operator *(CReal x);
+  CReal operator /(CReal x);
+
+  /// Unary minus (negate)
+  CReal operator -();
+
+  CReal operator <<(int n);
+  CReal operator >>(int n);
+
+  CReal sqrt();
+  CReal sin();
+  CReal cos();
+
+  String toStringPrecision(int precision, [int radix = 10]);
+
+  static CReal pi = GLPiCReal();
+}
+
+abstract class CRealImpl implements CReal {
+  CRealImpl();
+
   int? minimumPrecision;
-  @protected
   BigInt? maxApproximation;
-  @protected
   bool isApproximationValid = false;
 
-  factory CReal.fromInt(int i) {
+  factory CRealImpl.fromInt(int i) {
     return IntCReal(BigInt.from(i));
   }
 
-  @protected
-  factory CReal.fromBigInt(BigInt i) {
+  factory CRealImpl.fromBigInt(BigInt i) {
     return IntCReal(i);
   }
-  factory CReal.parse(String s) {
+  factory CRealImpl.parse(String s) {
     s = s.trim();
     final len = s.length;
     var fraction = '0';
@@ -38,75 +60,64 @@ abstract class CReal {
     final whole = s.substring(0, pointPosition);
     final scaledResult = BigInt.parse(whole + fraction);
     final divisor = BigInt.from(10).pow(fraction.length);
-    return CReal.fromBigInt(scaledResult).divide(CReal.fromBigInt(divisor));
+    return CRealImpl.fromBigInt(scaledResult) / (CRealImpl.fromBigInt(divisor));
   }
 
-  CReal? tryParse(String s) {
+  @override
+  CRealImpl? tryParse(String s) {
     try {
-      return CReal.parse(s);
+      return CRealImpl.parse(s);
     } catch (e) {
       return null;
     }
   }
 
-  CReal add(CReal x) {
-    return AddCReal(this, x);
-  }
+  @override
+  CRealImpl operator +(covariant CRealImpl x) => AddCReal(this, x);
 
-  CReal operator +(CReal x) => add(x);
+  @override
+  CRealImpl operator -(covariant CRealImpl x) => AddCReal(this, x.negate());
 
-  CReal subtract(CReal x) {
-    return AddCReal(this, x.negate());
-  }
+  @override
+  CRealImpl operator *(covariant CRealImpl x) => MultCReal(this, x);
 
-  CReal operator -(CReal x) => subtract(x);
+  @override
+  CRealImpl operator /(covariant CRealImpl x) => MultCReal(this, x.inverse());
 
-  CReal multiply(CReal x) {
-    return MultCReal(this, x);
-  }
-
-  CReal operator *(CReal x) => multiply(x);
-
-  CReal divide(CReal other) {
-    return MultCReal(this, other.inverse());
-  }
-
-  CReal operator /(CReal x) => divide(x);
-
-  CReal inverse() {
+  CRealImpl inverse() {
     return InvCReal(this);
   }
 
-  @protected
-  CReal negate() {
+  CRealImpl negate() {
     return NegCReal(this);
   }
 
-  CReal operator -() => negate();
+  @override
+  CRealImpl operator -() => negate();
 
-  CReal sqrt() {
+  CRealImpl sqrt() {
     return SqrtCReal(this);
   }
 
-  CReal shiftLeft(int n) {
-    CReal.checkPrecision(n);
+  CRealImpl shiftLeft(int n) {
+    CRealImpl.checkPrecision(n);
     return ShiftedCReal(this, n);
   }
 
-  CReal operator <<(int n) => shiftLeft(n);
+  CRealImpl operator <<(int n) => shiftLeft(n);
 
-  CReal shiftRight(int n) {
-    CReal.checkPrecision(n);
+  CRealImpl shiftRight(int n) {
+    CRealImpl.checkPrecision(n);
     return ShiftedCReal(this, -n);
   }
 
-  CReal operator >>(int n) => shiftRight(n);
+  CRealImpl operator >>(int n) => shiftRight(n);
 
-  CReal cos() {
-    final halfPi = (this / CReal.PI).getApproximation(-1);
+  CRealImpl cos() {
+    final halfPi = (this / CRealImpl._pi).getApproximation(-1);
     if (halfPi.abs() >= BigInt.two) {
-      final piMultiplies = CReal.scale(halfPi, -1);
-      final adjustment = CReal.PI * CReal.fromBigInt(piMultiplies);
+      final piMultiplies = CRealImpl.scale(halfPi, -1);
+      final adjustment = CRealImpl._pi * CRealImpl.fromBigInt(piMultiplies);
       if ((piMultiplies & BigInt.one) != BigInt.zero) {
         return (this - adjustment).cos().negate();
       } else {
@@ -114,20 +125,20 @@ abstract class CReal {
       }
     } else if (getApproximation(-1).abs() >= BigInt.two) {
       final cosHalf = shiftRight(1).cos();
-      return (cosHalf * cosHalf).shiftLeft(1) - CReal.fromInt(1);
+      return (cosHalf * cosHalf).shiftLeft(1) - CRealImpl.fromInt(1);
     } else {
       return PrescaledCosCReal(this);
     }
   }
 
-  CReal sin() {
-    return (CReal._halfPi - this).cos();
+  CRealImpl sin() {
+    return (CRealImpl._halfPi - this).cos();
   }
 
   BigInt getApproximation(int p) {
-    CReal.checkPrecision(p);
+    CRealImpl.checkPrecision(p);
     if (isApproximationValid && p >= minimumPrecision!) {
-      return CReal.scale(maxApproximation!, minimumPrecision! - p);
+      return CRealImpl.scale(maxApproximation!, minimumPrecision! - p);
     } else {
       final result = approximate(p);
       minimumPrecision = p;
@@ -163,7 +174,7 @@ abstract class CReal {
     if (n >= 0) {
       return k << n;
     } else {
-      final adjustedK = CReal.shift(k, n + 1) + BigInt.one;
+      final adjustedK = CRealImpl.shift(k, n + 1) + BigInt.one;
       return adjustedK >> 1;
     }
   }
@@ -203,14 +214,14 @@ abstract class CReal {
       if (msd != intMinValue) {
         return msd;
       }
-      CReal.checkPrecision(n);
+      CRealImpl.checkPrecision(n);
     }
     return msd(p);
   }
 
   String toStringPrecision(int precision, [int radix = 10]) {
     final scaleFactor = BigInt.from(radix).pow(precision);
-    final scaledCReal = multiply(IntCReal(scaleFactor));
+    final scaledCReal = this * IntCReal(scaleFactor);
     final scaledInt = scaledCReal.getApproximation(0);
 
     if (scaledInt < BigInt.zero) {
@@ -237,6 +248,6 @@ abstract class CReal {
     return (math.log(n.abs() + 1) / math.log(2)).ceil();
   }
 
-  static final _halfPi = PI.shiftRight(1);
-  static final PI = GLPiCReal();
+  static final _halfPi = _pi.shiftRight(1);
+  static final _pi = GLPiCReal();
 }

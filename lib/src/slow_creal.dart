@@ -1,21 +1,21 @@
 import 'dart:math' as math;
 
-import 'computable_reals_base.dart';
+import 'creal.dart';
 import 'functions.dart';
 
-abstract class SlowCReal extends CReal {
+abstract class SlowCReal extends CRealImpl {
   static const maxPrecision = -64;
   static const precisionIncr = 32;
 
-  static final one = CReal.fromInt(1);
+  static final one = CRealImpl.fromInt(1);
 
   @override
   BigInt getApproximation(int p) {
-    CReal.checkPrecision(p);
+    CRealImpl.checkPrecision(p);
     if (maxApproximation != null &&
         isApproximationValid &&
         (minimumPrecision != null && p >= minimumPrecision!)) {
-      return CReal.scale(maxApproximation!, minimumPrecision! - p);
+      return CRealImpl.scale(maxApproximation!, minimumPrecision! - p);
     } else {
       final evalPrecision = p >= maxPrecision
           ? maxPrecision
@@ -24,7 +24,7 @@ abstract class SlowCReal extends CReal {
       minimumPrecision = evalPrecision;
       maxApproximation = result;
       isApproximationValid = true;
-      return CReal.scale(result, evalPrecision - p);
+      return CRealImpl.scale(result, evalPrecision - p);
     }
   }
 }
@@ -41,7 +41,7 @@ class GLPiCReal extends SlowCReal {
     final bPrec = this.bPrec;
     final bVal = this.bVal;
     if (p >= 0) {
-      return CReal.scale(BigInt.from(3), -p);
+      return CRealImpl.scale(BigInt.from(3), -p);
     }
     final extraEvalPrecision = (math.log(-p) / math.log(2)).ceil() + 10;
     final evalPrecision = p - extraEvalPrecision;
@@ -54,18 +54,19 @@ class GLPiCReal extends SlowCReal {
       BigInt nextB;
       final aDiff = a - nextA;
       final bProd = (a * b) >> -evalPrecision;
-      final bProdAsCReal = CReal.fromBigInt(bProd).shiftRight(-evalPrecision);
+      final bProdAsCReal =
+          CRealImpl.fromBigInt(bProd).shiftRight(-evalPrecision);
       if (bPrec.length == n + 1) {
         final nextBasCReal = bProdAsCReal.sqrt();
         nextB = nextBasCReal.getApproximation(evalPrecision);
-        final scaledNextB = CReal.scale(nextB, -extraEvalPrecision);
+        final scaledNextB = CRealImpl.scale(nextB, -extraEvalPrecision);
         bPrec.add(p);
         bVal.add(scaledNextB);
       } else {
         final nextBasCReal = SqrtCReal(bProdAsCReal, bPrec[n + 1], bVal[n + 1]);
         nextB = nextBasCReal.getApproximation(evalPrecision);
         bPrec[n + 1] = p;
-        bVal[n + 1] = CReal.scale(nextB, -extraEvalPrecision);
+        bVal[n + 1] = CRealImpl.scale(nextB, -extraEvalPrecision);
       }
       final nextT = t - (aDiff * aDiff >> -n - evalPrecision);
       a = nextA;
@@ -76,13 +77,13 @@ class GLPiCReal extends SlowCReal {
     final sum = a + b;
     final r = (sum * sum) ~/ t;
     final result = r >> 2;
-    return CReal.scale(result, -extraEvalPrecision);
+    return CRealImpl.scale(result, -extraEvalPrecision);
   }
 }
 
 class PrescaledCosCReal extends SlowCReal {
   PrescaledCosCReal(this.x);
-  final CReal x;
+  final CRealImpl x;
 
   @override
   BigInt approximate(int p) {
@@ -90,7 +91,7 @@ class PrescaledCosCReal extends SlowCReal {
       return BigInt.zero;
     }
     final iterationsNeeded = (-p / 2 + 4).floor();
-    final calcPrecision = p - CReal.boundLog2(2 * iterationsNeeded) - 4;
+    final calcPrecision = p - CRealImpl.boundLog2(2 * iterationsNeeded) - 4;
     final xPrecision = p - 2;
     final xApproximation = x.getApproximation(xPrecision);
     final maxTruncError = BigInt.one << (p - 4 - calcPrecision);
@@ -99,12 +100,12 @@ class PrescaledCosCReal extends SlowCReal {
     var currentSum = currentTerm;
     while (currentTerm.abs() >= maxTruncError) {
       n += BigInt.two;
-      currentTerm = CReal.scale(currentTerm * xApproximation, xPrecision);
-      currentTerm = CReal.scale(currentTerm * xApproximation, xPrecision);
+      currentTerm = CRealImpl.scale(currentTerm * xApproximation, xPrecision);
+      currentTerm = CRealImpl.scale(currentTerm * xApproximation, xPrecision);
       final divisor = -n * (n - BigInt.one);
       currentTerm ~/= divisor;
       currentSum += currentTerm;
     }
-    return CReal.scale(currentSum, calcPrecision - p);
+    return CRealImpl.scale(currentSum, calcPrecision - p);
   }
 }

@@ -81,18 +81,18 @@ void main() {
   group('SlowCReal', () {
     group('PI', () {
       test('15 digits', () {
-        var cr = CReal.PI;
+        var cr = CReal.pi;
         var expected = "3.141592653589793";
         expect(cr.toStringPrecision(15), expected);
       });
       test('300 digits', () {
-        var cr = CReal.PI;
+        var cr = CReal.pi;
         var expected =
             "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141274";
         expect(cr.toStringPrecision(300), expected);
       });
       test('1/(Pi*1000)', () {
-        var cr = CReal.fromInt(1) / (CReal.PI * CReal.fromInt(1000));
+        var cr = CReal.fromInt(1) / (CReal.pi * CReal.fromInt(1000));
         var expected =
             "0.0003183098861837906715377675267450287240689192914809128974953347";
         expect(cr.toStringPrecision(64), expected);
@@ -102,8 +102,8 @@ void main() {
       // integer precision
       final m = {
         CReal.fromInt(0): '1',
-        CReal.PI: '-1',
-        CReal.fromInt(2) * CReal.PI: '1',
+        CReal.pi: '-1',
+        CReal.fromInt(2) * CReal.pi: '1',
       };
       for (var e in m.entries) {
         test(e.key.toStringPrecision(5), () {
@@ -126,9 +126,9 @@ void main() {
       // integer precision
       final m = {
         cr(0): '0',
-        CReal.PI: '0',
+        CReal.pi: '0',
         // sin(2pi+1/2pi)
-        cr(2) * CReal.PI + cr(1) / cr(2) * CReal.PI: '1',
+        cr(2) * CReal.pi + cr(1) / cr(2) * CReal.pi: '1',
       };
       for (var e in m.entries) {
         test(e.key.toStringPrecision(5), () {

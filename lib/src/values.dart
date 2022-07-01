@@ -1,18 +1,18 @@
-import 'computable_reals_base.dart';
+import 'creal.dart';
 
-class IntCReal extends CReal {
+class IntCReal extends CRealImpl {
   IntCReal(this.value);
   final BigInt value;
 
   @override
   BigInt approximate(int p) {
-    return CReal.scale(value, -p);
+    return CRealImpl.scale(value, -p);
   }
 }
 
-class InvCReal extends CReal {
+class InvCReal extends CRealImpl {
   InvCReal(this.x);
-  final CReal x;
+  final CRealImpl x;
 
   @override
   BigInt approximate(int p) {
@@ -37,12 +37,12 @@ class InvCReal extends CReal {
   }
 }
 
-class NegCReal extends CReal {
+class NegCReal extends CRealImpl {
   NegCReal(this.x);
-  final CReal x;
+  final CRealImpl x;
 
   @override
-  CReal negate() {
+  CRealImpl negate() {
     return x;
   }
 
