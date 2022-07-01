@@ -1,8 +1,14 @@
-import 'dart:math';
-
 import 'package:computable_reals/computable_reals.dart';
 
 void main() {
-  var n = CReal.parse('15');
-  print(n.toStringPrecision(0));
+  // Create a computable real from an integer
+  var one = CReal.fromInt(1);
+  var three = CReal.parse('3'); // Works with doubles too!
+  var result = one / three;
+  print(result.toStringPrecision(5));     // 0.33333
+  // Request more digits
+  print(result.toStringPrecision(17));    // 0.33333333333333333
+
+  // Regular floating point numbers eventually lose precision:
+  print((1 / 3).toStringAsPrecision(17)); // 0.33333333333333331
 }

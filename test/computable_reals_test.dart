@@ -36,32 +36,53 @@ void main() {
   });
 
   group('operators', () {
-    const sqrts = {
-      9: "3",
-      1: "1",
-      25: "5",
-    };
-    for (var e in sqrts.entries) {
-      test('int sqrt(${e.key})', () {
-        var cr = CReal.fromInt(e.key);
-        expect(cr.sqrt().toStringPrecision(0), e.value);
+    group('sqrt', () {
+      test('sqrt throws when negative', () {
+        var cr = CReal.fromInt(-9).sqrt();
+        expect(() => cr.toStringPrecision(0), throwsException);
       });
-    }
-    test('sqrt throws when negative', () {
-      var cr = CReal.fromInt(-9).sqrt();
-      expect(() => cr.toStringPrecision(0), throwsException);
+      const ints = {
+        9: "3",
+        1: "1",
+        25: "5",
+      };
+      for (var e in ints.entries) {
+        test('int sqrt(${e.key})', () {
+          var cr = CReal.fromInt(e.key);
+          expect(cr.sqrt().toStringPrecision(0), e.value);
+        });
+      }
+      const doubles = {
+        2: "1.41421",
+        3: "1.73205",
+        100000 * 1000000: "316227.76602",
+      };
+      for (var e in doubles.entries) {
+        test('double sqrt(${e.key})', () {
+          var cr = CReal.fromInt(e.key).sqrt();
+          expect(cr.toStringPrecision(5), e.value);
+        });
+      }
     });
+  });
 
-    const m = {
-      2: "1.41421",
-      3: "1.73205",
-      100000 * 1000000: "316227.76602",
-    };
-    for (var e in m.entries) {
-      test('double sqrt(${e.key})', () {
-        var cr = CReal.fromInt(e.key).sqrt();
-        expect(cr.toStringPrecision(5), e.value);
-      });
-    }
+  group('SlowCReal', () {
+    test('Pi 15 digits', () {
+      var cr = CReal.PI;
+      var expected = "3.141592653589793";
+      expect(cr.toStringPrecision(15), expected);
+    });
+    test('Pi 300 digits', () {
+      var cr = CReal.PI;
+      var expected =
+          "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141274";
+      expect(cr.toStringPrecision(300), expected);
+    });
+    test('1/(Pi*1000)', () {
+      var cr = CReal.fromInt(1) / (CReal.PI * CReal.fromInt(1000));
+      var expected =
+          "0.0003183098861837906715377675267450287240689192914809128974953347";
+      expect(cr.toStringPrecision(64), expected);
+    });
   });
 }

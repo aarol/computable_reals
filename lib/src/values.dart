@@ -16,7 +16,7 @@ class InvCReal extends CReal {
 
   @override
   BigInt approximate(int p) {
-    final msd = x.msd(intMinValue);
+    final msd = x.msd(null);
     final inverseMsd = 1 - msd;
     final digitsNeeded = inverseMsd - p + 3;
 

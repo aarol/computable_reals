@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'computable_reals_base.dart';
+import 'functions.dart';
 
 abstract class SlowCReal extends CReal {
   static const maxPrecision = -64;

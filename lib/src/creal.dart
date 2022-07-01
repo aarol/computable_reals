@@ -1,6 +1,7 @@
 import 'package:computable_reals/src/slow_creal.dart';
 
 import 'computable_reals_base.dart';
+import 'functions.dart';
 import 'operators.dart';
 import 'values.dart';
 import 'package:meta/meta.dart';
@@ -8,8 +9,11 @@ import 'package:meta/meta.dart';
 abstract class CReal {
   CReal();
 
+  @protected
   int? minimumPrecision;
+  @protected
   BigInt? maxApproximation;
+  @protected
   bool isApproximationValid = false;
 
   factory CReal.fromInt(int i) {
@@ -48,17 +52,25 @@ abstract class CReal {
     return AddCReal(this, x);
   }
 
+  CReal operator +(CReal x) => add(x);
+
   CReal subtract(CReal x) {
     return AddCReal(this, x.negate());
   }
+
+  CReal operator -(CReal x) => subtract(x);
 
   CReal multiply(CReal x) {
     return MultCReal(this, x);
   }
 
+  CReal operator *(CReal x) => multiply(x);
+
   CReal divide(CReal other) {
     return MultCReal(this, other.inverse());
   }
+
+  CReal operator /(CReal x) => divide(x);
 
   CReal inverse() {
     return InvCReal(this);
@@ -72,17 +84,24 @@ abstract class CReal {
     return SqrtCReal(this);
   }
 
+  CReal shiftLeft(int n) {
+    CReal.checkPrecision(n);
+    return ShiftedCReal(this, n);
+  }
+
+  CReal operator <<(int n) => shiftLeft(n);
+
   CReal shiftRight(int n) {
     CReal.checkPrecision(n);
     return ShiftedCReal(this, -n);
   }
 
+  CReal operator >>(int n) => shiftRight(n);
+
   BigInt getApproximation(int p) {
     CReal.checkPrecision(p);
-    if (maxApproximation != null &&
-        isApproximationValid &&
-        p >= (minimumPrecision ?? 0)) {
-      return CReal.scale(maxApproximation!, (minimumPrecision ?? 0) - p);
+    if (isApproximationValid && p >= minimumPrecision!) {
+      return CReal.scale(maxApproximation!, minimumPrecision! - p);
     } else {
       final result = approximate(p);
       minimumPrecision = p;
@@ -131,7 +150,7 @@ abstract class CReal {
       length = maxApproximation!.bitLength;
     } else {
       // negative numbers are stored differently
-      length = (-maxApproximation!).bitLength;
+      length = maxApproximation!.bitLength + 1;
     }
     return minimumPrecision! + length - 1;
   }
@@ -141,9 +160,9 @@ abstract class CReal {
     if (precision == null) {
       return iterateMsd(intMinValue);
     }
+    // Approximation is between [-1, 1]
     if (!isApproximationValid ||
-        (maxApproximation != null && maxApproximation! <= BigInt.one) &&
-            (maxApproximation!) >= -BigInt.one) {
+        maxApproximation! <= BigInt.one && maxApproximation! >= -BigInt.one) {
       getApproximation(precision - 1);
       if (maxApproximation!.abs() <= BigInt.one) {
         return intMinValue;
@@ -152,15 +171,15 @@ abstract class CReal {
     return knownMsd();
   }
 
-  int iterateMsd(int precision) {
-    for (var p = 0; p > p + 30; p = (p * 3) ~/ 2 - 16) {
-      final msd = this.msd(p);
+  int iterateMsd(int p) {
+    for (var n = 0; n > p + 30; n = (n * 3) ~/ 2 - 16) {
+      final msd = this.msd(n);
       if (msd != intMinValue) {
         return msd;
       }
-      CReal.checkPrecision(precision);
+      CReal.checkPrecision(n);
     }
-    return msd(precision);
+    return msd(p);
   }
 
   String toStringPrecision(int precision, [int radix = 10]) {
