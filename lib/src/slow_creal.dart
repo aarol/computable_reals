@@ -79,3 +79,32 @@ class GLPiCReal extends SlowCReal {
     return CReal.scale(result, -extraEvalPrecision);
   }
 }
+
+class PrescaledCosCReal extends SlowCReal {
+  PrescaledCosCReal(this.x);
+  final CReal x;
+
+  @override
+  BigInt approximate(int p) {
+    if (p >= 1) {
+      return BigInt.zero;
+    }
+    final iterationsNeeded = (-p / 2 + 4).floor();
+    final calcPrecision = p - CReal.boundLog2(2 * iterationsNeeded) - 4;
+    final xPrecision = p - 2;
+    final xApproximation = x.getApproximation(xPrecision);
+    final maxTruncError = BigInt.one << (p - 4 - calcPrecision);
+    var n = BigInt.zero;
+    var currentTerm = BigInt.one << -calcPrecision;
+    var currentSum = currentTerm;
+    while (currentTerm.abs() >= maxTruncError) {
+      n += BigInt.two;
+      currentTerm = CReal.scale(currentTerm * xApproximation, xPrecision);
+      currentTerm = CReal.scale(currentTerm * xApproximation, xPrecision);
+      final divisor = -n * (n - BigInt.one);
+      currentTerm ~/= divisor;
+      currentSum += currentTerm;
+    }
+    return CReal.scale(currentSum, calcPrecision - p);
+  }
+}

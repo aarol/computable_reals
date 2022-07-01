@@ -1,4 +1,5 @@
 import 'package:computable_reals/src/slow_creal.dart';
+import 'dart:math' as math;
 
 import 'computable_reals_base.dart';
 import 'functions.dart';
@@ -9,7 +10,7 @@ import 'package:meta/meta.dart';
 abstract class CReal {
   CReal();
 
-  @protected
+  @internal
   int? minimumPrecision;
   @protected
   BigInt? maxApproximation;
@@ -76,9 +77,12 @@ abstract class CReal {
     return InvCReal(this);
   }
 
+  @protected
   CReal negate() {
     return NegCReal(this);
   }
+
+  CReal operator -() => negate();
 
   CReal sqrt() {
     return SqrtCReal(this);
@@ -97,6 +101,28 @@ abstract class CReal {
   }
 
   CReal operator >>(int n) => shiftRight(n);
+
+  CReal cos() {
+    final halfPi = (this / CReal.PI).getApproximation(-1);
+    if (halfPi.abs() >= BigInt.two) {
+      final piMultiplies = CReal.scale(halfPi, -1);
+      final adjustment = CReal.PI * CReal.fromBigInt(piMultiplies);
+      if ((piMultiplies & BigInt.one) != BigInt.zero) {
+        return (this - adjustment).cos().negate();
+      } else {
+        return (this - adjustment).cos();
+      }
+    } else if (getApproximation(-1).abs() >= BigInt.two) {
+      final cosHalf = shiftRight(1).cos();
+      return (cosHalf * cosHalf).shiftLeft(1) - CReal.fromInt(1);
+    } else {
+      return PrescaledCosCReal(this);
+    }
+  }
+
+  CReal sin() {
+    return (CReal._halfPi - this).cos();
+  }
 
   BigInt getApproximation(int p) {
     CReal.checkPrecision(p);
@@ -207,5 +233,10 @@ abstract class CReal {
     return result;
   }
 
+  static int boundLog2(int n) {
+    return (math.log(n.abs() + 1) / math.log(2)).ceil();
+  }
+
+  static final _halfPi = PI.shiftRight(1);
   static final PI = GLPiCReal();
 }
