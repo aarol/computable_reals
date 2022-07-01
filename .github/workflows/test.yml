@@ -15,10 +15,10 @@ jobs:
      - uses: dart-lang/setup-dart@v1.3
 
      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
+       run: dart format --output=none --set-exit-if-changed .
 
      - name: Analyze project
-        run: dart analyze
+       run: dart analyze
 
      - name: Run tests
-        run: dart test
+       run: dart test
