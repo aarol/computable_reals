@@ -42,14 +42,14 @@ void main() {
     };
     for (var e in m.entries) {
       test(e.key.toStringPrecision(5), () {
-        expect(e.key.toStringPrecision(20), e.value);
+        expect(e.key.toStringPrecision(20, 10, true), e.value);
       });
     }
   });
 
   group('operators', () {
     group('sqrt', () {
-      test('sqrt throws when negative', () {
+      test('throws when negative', () {
         var cr = CReal.fromInt(-9).sqrt();
         expect(() => cr.toStringPrecision(0), throwsException);
       });
@@ -59,7 +59,7 @@ void main() {
         25: "5",
       };
       for (var e in ints.entries) {
-        test('int sqrt(${e.key})', () {
+        test('int ${e.key}', () {
           var cr = CReal.fromInt(e.key);
           expect(cr.sqrt().toStringPrecision(0), e.value);
         });
@@ -70,7 +70,7 @@ void main() {
         100000 * 1000000: "316227.76602",
       };
       for (var e in doubles.entries) {
-        test('double sqrt(${e.key})', () {
+        test('double ${e.key}', () {
           var cr = CReal.fromInt(e.key).sqrt();
           expect(cr.toStringPrecision(5), e.value);
         });
@@ -79,7 +79,7 @@ void main() {
   });
 
   group('SlowCReal', () {
-    group('PI', () {
+    group('pi', () {
       test('15 digits', () {
         var cr = CReal.pi;
         var expected = "3.141592653589793";
@@ -118,7 +118,7 @@ void main() {
       };
       for (var e in a.entries) {
         test(e.key.toStringPrecision(5), () {
-          expect(e.key.cos().toStringPrecision(20), e.value);
+          expect(e.key.cos().toStringPrecision(20, 10, true), e.value);
         });
       }
     });
@@ -143,7 +143,7 @@ void main() {
       };
       for (var e in a.entries) {
         test(e.key.toStringPrecision(5), () {
-          expect(e.key.sin().toStringPrecision(20), e.value);
+          expect(e.key.sin().toStringPrecision(20, 10, true), e.value);
         });
       }
     });

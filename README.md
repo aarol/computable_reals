@@ -1,9 +1,9 @@
 TODO: Put a short description of the package here that helps potential users
 know whether this package might be useful for them.
 
+![tests](https://github.com/aarol/computable_reals/actions/workflows/test/badge.svg)
+
 ## Features
-
-
 
 TODO: List what your package can do. Maybe include images, gifs, or videos.
 
@@ -26,6 +26,7 @@ print(result.toStringPrecision(5)); // 0.33333
 * Addition, substraction, division, multiplication
 * Left/right shift
 * Square root
+* Sin, cos
 * PI
 
 ## References

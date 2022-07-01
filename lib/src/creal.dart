@@ -5,8 +5,19 @@ import 'computable_reals_base.dart';
 import 'functions.dart';
 import 'operators.dart';
 import 'values.dart';
-import 'package:meta/meta.dart';
 
+/// Constructive real numbers, also known as recursive, or computable reals.
+///
+/// Each recursive real number is represented as an object that provides an
+/// approximation function for the real number.
+///
+/// The approximation function guarantees that the generated approximation
+/// is accurate to the specified precision.
+/// Arithmetic operations on constructive reals produce new such objects;
+/// they typically do not perform any real computation.
+/// In this sense, arithmetic computations are exact: They produce
+/// a description which describes the exact answer, and can be used to
+/// later approximate it to arbitrary precision.
 abstract class CReal {
   factory CReal.fromInt(int i) = CRealImpl.fromInt;
   factory CReal.fromBigInt(BigInt i) = CRealImpl.fromBigInt;
@@ -28,7 +39,13 @@ abstract class CReal {
   CReal sin();
   CReal cos();
 
-  String toStringPrecision(int precision, [int radix = 10]);
+  String toStringPrecision(int precision,
+      [int radix = 10, bool trailingZeroes = false]);
+
+  @override
+  String toString() {
+    return toStringPrecision(15);
+  }
 
   static CReal pi = GLPiCReal();
 }
@@ -95,6 +112,7 @@ abstract class CRealImpl implements CReal {
   @override
   CRealImpl operator -() => negate();
 
+  @override
   CRealImpl sqrt() {
     return SqrtCReal(this);
   }
@@ -104,6 +122,7 @@ abstract class CRealImpl implements CReal {
     return ShiftedCReal(this, n);
   }
 
+  @override
   CRealImpl operator <<(int n) => shiftLeft(n);
 
   CRealImpl shiftRight(int n) {
@@ -111,8 +130,10 @@ abstract class CRealImpl implements CReal {
     return ShiftedCReal(this, -n);
   }
 
+  @override
   CRealImpl operator >>(int n) => shiftRight(n);
 
+  @override
   CRealImpl cos() {
     final halfPi = (this / CRealImpl._pi).getApproximation(-1);
     if (halfPi.abs() >= BigInt.two) {
@@ -131,6 +152,7 @@ abstract class CRealImpl implements CReal {
     }
   }
 
+  @override
   CRealImpl sin() {
     return (CRealImpl._halfPi - this).cos();
   }
@@ -149,8 +171,6 @@ abstract class CRealImpl implements CReal {
   }
 
   /// Throws an error if p is outside what can be safely represented with an integer.
-
-  @protected
   static void checkPrecision(int p) {
     final high = p >> 28;
     final highShifted = p >> 29;
@@ -219,13 +239,15 @@ abstract class CRealImpl implements CReal {
     return msd(p);
   }
 
-  String toStringPrecision(int precision, [int radix = 10]) {
+  @override
+  String toStringPrecision(int precision,
+      [int radix = 10, bool trailingZeroes = false]) {
     final scaleFactor = BigInt.from(radix).pow(precision);
     final scaledCReal = this * IntCReal(scaleFactor);
     final scaledInt = scaledCReal.getApproximation(0);
 
     if (scaledInt < BigInt.zero) {
-      return '-${negate().toStringPrecision(precision, radix)}';
+      return '-${negate().toStringPrecision(precision, radix, trailingZeroes)}';
     }
     String scaledString = scaledInt.toRadixString(radix);
     String result = "";
@@ -238,8 +260,21 @@ abstract class CRealImpl implements CReal {
         len = precision + 1;
       }
       final whole = scaledString.substring(0, len - precision);
-      final fraction = scaledString.substring(len - precision);
-      result = whole + '.' + fraction;
+      var fraction = scaledString.substring(len - precision);
+      if (!trailingZeroes) {
+        var last = fraction.length;
+        for (var i = fraction.length - 1; i >= 0; i--) {
+          if (fraction[i] != "0") break;
+          last = i;
+        }
+
+        fraction = fraction.substring(0, last);
+      }
+      if (fraction == "") {
+        result = whole;
+      } else {
+        result = whole + '.' + fraction;
+      }
     }
     return result;
   }
