@@ -1,9 +1,11 @@
-import 'package:computable_reals/src/slow_creal.dart';
+import 'dart:typed_data';
+
 import 'dart:math' as math;
 
 import 'computable_reals_base.dart';
 import 'functions.dart';
 import 'operators.dart';
+import 'slow_creal.dart';
 import 'values.dart';
 
 /// Constructive real numbers, also known as recursive, or computable reals.
@@ -18,8 +20,11 @@ import 'values.dart';
 /// In this sense, arithmetic computations are exact: They produce
 /// a description which describes the exact answer, and can be used to
 /// later approximate it to arbitrary precision.
+///
+/// Calling toStringPrecision(20) will evaluate the CReal recursively for up to
+/// 20 digits
 abstract class CReal {
-  factory CReal.fromInt(int i) = CRealImpl.fromInt;
+  factory CReal.from(num i) = CRealImpl.from;
   factory CReal.fromBigInt(BigInt i) = CRealImpl.fromBigInt;
   factory CReal.parse(String s) = CRealImpl.parse;
   CReal? tryParse(String s);
@@ -57,8 +62,25 @@ abstract class CRealImpl implements CReal {
   BigInt? maxApproximation;
   bool isApproximationValid = false;
 
-  factory CRealImpl.fromInt(int i) {
-    return IntCReal(BigInt.from(i));
+  factory CRealImpl.from(num i) {
+    if (i is double) {
+      // We need to access the floating point representation
+      var bd = ByteData(8);
+      bd.setFloat64(0, i.abs());
+      var bits = bd.getInt64(0);
+      var mantissa = (bits & 0xfffffffffffff);
+      var biasedExp = bits >> 52;
+      var exp = biasedExp - 1075;
+      if (biasedExp != 0) {
+        mantissa += (1 << 52);
+      } else {
+        mantissa <<= 1;
+      }
+      var result = IntCReal(BigInt.from(mantissa)).shiftLeft(exp);
+      return i.isNegative ? result.negate() : result;
+    } else {
+      return IntCReal(BigInt.from(i));
+    }
   }
 
   factory CRealImpl.fromBigInt(BigInt i) {
@@ -146,7 +168,7 @@ abstract class CRealImpl implements CReal {
       }
     } else if (getApproximation(-1).abs() >= BigInt.two) {
       final cosHalf = shiftRight(1).cos();
-      return (cosHalf * cosHalf).shiftLeft(1) - CRealImpl.fromInt(1);
+      return (cosHalf * cosHalf).shiftLeft(1) - CRealImpl.from(1);
     } else {
       return PrescaledCosCReal(this);
     }
@@ -277,6 +299,11 @@ abstract class CRealImpl implements CReal {
       }
     }
     return result;
+  }
+
+  @override
+  String toString() {
+    return toStringPrecision(15);
   }
 
   static int boundLog2(int n) {

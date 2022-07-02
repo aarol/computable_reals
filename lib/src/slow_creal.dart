@@ -7,7 +7,7 @@ abstract class SlowCReal extends CRealImpl {
   static const maxPrecision = -64;
   static const precisionIncr = 32;
 
-  static final one = CRealImpl.fromInt(1);
+  static final one = CRealImpl.from(1);
 
   @override
   BigInt getApproximation(int p) {
@@ -68,7 +68,8 @@ class GLPiCReal extends SlowCReal {
         bPrec[n + 1] = p;
         bVal[n + 1] = CRealImpl.scale(nextB, -extraEvalPrecision);
       }
-      final nextT = t - (aDiff * aDiff >> -n - evalPrecision);
+      // Left shift with negative amount <=> Right shift with positive amount
+      final nextT = t - (aDiff * aDiff >> -(n + evalPrecision));
       a = nextA;
       b = nextB;
       t = nextT;

@@ -1,9 +1,9 @@
 import 'package:computable_reals/computable_reals.dart';
 
 void main() {
-  (CReal.fromInt(1) / CReal.fromInt(100)).toStringPrecision(15);
+  (CReal.from(1) / CReal.from(100)).toStringPrecision(15);
   // Create a computable real from an integer
-  CReal one = CReal.fromInt(1);
+  CReal one = CReal.from(1);
   CReal three = CReal.parse('3'); // Works with doubles too!
   var result = one / three;
   print(result.toStringPrecision(5)); // 0.33333

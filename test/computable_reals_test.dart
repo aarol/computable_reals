@@ -2,17 +2,20 @@ import 'package:computable_reals/computable_reals.dart';
 import 'package:test/test.dart';
 
 void main() {
-  CReal cr(int v) => CReal.fromInt(v);
-  group('fromInt', () {
+  CReal cr(num v) => CReal.from(v);
+  group('from', () {
     final m = {
       15: "15",
       -15: "-15",
       0: "0",
+      1.5: "1.5",
+      0.0: "0",
+      1416346.12315715000: "1416346.12315715",
     };
     for (var s in m.entries) {
       test(s.key, () {
-        var cr = CReal.fromInt(s.key);
-        expect(cr.toStringPrecision(0), s.value);
+        var cr = CReal.from(s.key);
+        expect(cr.toStringPrecision(8), s.value);
       });
     }
   });
@@ -50,7 +53,7 @@ void main() {
   group('operators', () {
     group('sqrt', () {
       test('throws when negative', () {
-        var cr = CReal.fromInt(-9).sqrt();
+        var cr = CReal.from(-9).sqrt();
         expect(() => cr.toStringPrecision(0), throwsException);
       });
       const ints = {
@@ -60,7 +63,7 @@ void main() {
       };
       for (var e in ints.entries) {
         test('int ${e.key}', () {
-          var cr = CReal.fromInt(e.key);
+          var cr = CReal.from(e.key);
           expect(cr.sqrt().toStringPrecision(0), e.value);
         });
       }
@@ -71,7 +74,7 @@ void main() {
       };
       for (var e in doubles.entries) {
         test('double ${e.key}', () {
-          var cr = CReal.fromInt(e.key).sqrt();
+          var cr = CReal.from(e.key).sqrt();
           expect(cr.toStringPrecision(5), e.value);
         });
       }
@@ -92,7 +95,7 @@ void main() {
         expect(cr.toStringPrecision(300), expected);
       });
       test('1/(Pi*1000)', () {
-        var cr = CReal.fromInt(1) / (CReal.pi * CReal.fromInt(1000));
+        var cr = CReal.from(1) / (CReal.pi * CReal.from(1000));
         var expected =
             "0.0003183098861837906715377675267450287240689192914809128974953347";
         expect(cr.toStringPrecision(64), expected);
@@ -101,9 +104,9 @@ void main() {
     group('cos', () {
       // integer precision
       final m = {
-        CReal.fromInt(0): '1',
+        CReal.from(0): '1',
         CReal.pi: '-1',
-        CReal.fromInt(2) * CReal.pi: '1',
+        CReal.from(2) * CReal.pi: '1',
       };
       for (var e in m.entries) {
         test(e.key.toStringPrecision(5), () {
@@ -113,8 +116,8 @@ void main() {
 
       // arbitrary precision
       final a = {
-        CReal.fromInt(1): '0.54030230586813971740',
-        CReal.fromInt(5): '0.28366218546322626447',
+        CReal.from(1): '0.54030230586813971740',
+        CReal.from(5): '0.28366218546322626447',
       };
       for (var e in a.entries) {
         test(e.key.toStringPrecision(5), () {

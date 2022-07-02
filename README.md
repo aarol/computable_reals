@@ -1,11 +1,9 @@
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Computable reals, or constructive real numbers in Dart. Ported from [creal.js](https://github.com/christianp/creal.js), this package approximates numbers to arbitrary precision.
 
-![tests](https://github.com/aarol/computable_reals/actions/workflows/test/badge.svg)
+![tests](https://github.com/aarol/computable_reals/actions/workflows/test.yml/badge.svg)
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
 
 ## Usage
 
