@@ -39,6 +39,19 @@ void main() {
     }
   });
 
+  group('graph', () {
+    final m = {
+      cr(76) / cr(3) * cr(9): '228',
+      cr(1) / cr(5) - (-cr(8) / cr(10)): '1',
+      (cr(1) / cr(100)).sqrt(): '0.1'
+    };
+    for (var e in m.entries) {
+      test(e.key.toStringPrecision(5), () {
+        expect(e.key.toStringPrecision(2), e.value);
+      });
+    }
+  });
+
   group('floating point errors', () {
     final m = {
       CReal.parse('0.1') + CReal.parse('0.2'): '0.30000000000000000000'
@@ -107,6 +120,8 @@ void main() {
         CReal.from(0): '1',
         CReal.pi: '-1',
         CReal.from(2) * CReal.pi: '1',
+        //1/2pi + 3pi
+        cr(1) / cr(2) * CReal.pi + cr(3) * CReal.pi: '0'
       };
       for (var e in m.entries) {
         test(e.key.toStringPrecision(5), () {
@@ -116,8 +131,10 @@ void main() {
 
       // arbitrary precision
       final a = {
-        CReal.from(1): '0.54030230586813971740',
-        CReal.from(5): '0.28366218546322626447',
+        cr(1): '0.54030230586813971740',
+        cr(5): '0.28366218546322626447',
+        cr(-35): '-0.90369220509150675985',
+        cr(8008): '-0.99677560117552725167',
       };
       for (var e in a.entries) {
         test(e.key.toStringPrecision(5), () {
@@ -130,6 +147,8 @@ void main() {
       final m = {
         cr(0): '0',
         CReal.pi: '0',
+        // sin(3/2pi)
+        cr(3) / cr(2) * CReal.pi: '-1',
         // sin(2pi+1/2pi)
         cr(2) * CReal.pi + cr(1) / cr(2) * CReal.pi: '1',
       };
@@ -142,11 +161,38 @@ void main() {
       // arbitrary precision
       final a = {
         cr(531): '-0.07078230485740781010',
+        cr(-53): '-0.39592515018183418150',
         CReal.parse('0.4321'): '0.41877870990075814929'
       };
       for (var e in a.entries) {
         test(e.key.toStringPrecision(5), () {
           expect(e.key.sin().toStringPrecision(20, 10, true), e.value);
+        });
+      }
+    });
+
+    group('tan', () {
+      // integer precision
+      final m = {
+        cr(0): '0',
+        CReal.pi: '0',
+        cr(3) / cr(4) * CReal.pi: '-1',
+      };
+      for (var e in m.entries) {
+        test(e.key.toString(), () {
+          expect(e.key.tan().toStringPrecision(4), e.value);
+        });
+      }
+
+      // arbitrary precision
+      final a = {
+        cr(1): '1.55740772465490223051',
+        cr(8780): '-0.93433997451292766996',
+        cr(-10): '-0.64836082745908667126',
+      };
+      for (var e in a.entries) {
+        test(e.key.toStringPrecision(5), () {
+          expect(e.key.tan().toStringPrecision(20, 10, true), e.value);
         });
       }
     });

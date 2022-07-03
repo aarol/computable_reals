@@ -1,7 +1,16 @@
+import 'dart:io';
+
 import 'package:computable_reals/computable_reals.dart';
 
 void main() {
-  (CReal.from(1) / CReal.from(100)).toStringPrecision(15);
+  var b = BigInt.from(-215);
+  print(b.bitLength);
+  print((-b).bitLength);
+
+  // var c = a / b * CReal.pi;
+  var c = CReal.from(-10);
+  print(c.tan().toStringPrecision(1));
+  exit(0);
   // Create a computable real from an integer
   CReal one = CReal.from(1);
   CReal three = CReal.parse('3'); // Works with doubles too!

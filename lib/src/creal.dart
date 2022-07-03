@@ -43,14 +43,10 @@ abstract class CReal {
   CReal sqrt();
   CReal sin();
   CReal cos();
+  CReal tan();
 
   String toStringPrecision(int precision,
       [int radix = 10, bool trailingZeroes = false]);
-
-  @override
-  String toString() {
-    return toStringPrecision(15);
-  }
 
   static CReal pi = GLPiCReal();
 }
@@ -179,6 +175,11 @@ abstract class CRealImpl implements CReal {
     return (CRealImpl._halfPi - this).cos();
   }
 
+  @override
+  CReal tan() {
+    return sin() / cos();
+  }
+
   BigInt getApproximation(int p) {
     CRealImpl.checkPrecision(p);
     if (isApproximationValid && p >= minimumPrecision!) {
@@ -224,12 +225,12 @@ abstract class CRealImpl implements CReal {
   BigInt approximate(int p);
 
   int knownMsd() {
-    int? length;
+    int length;
     if (maxApproximation! >= BigInt.zero) {
       length = maxApproximation!.bitLength;
     } else {
       // negative numbers are stored differently
-      length = maxApproximation!.bitLength + 1;
+      length = maxApproximation!.bitLength;
     }
     return minimumPrecision! + length - 1;
   }
@@ -250,15 +251,15 @@ abstract class CRealImpl implements CReal {
     return knownMsd();
   }
 
-  int iterateMsd(int p) {
-    for (var n = 0; n > p + 30; n = (n * 3) ~/ 2 - 16) {
-      final msd = this.msd(n);
+  int iterateMsd(int n) {
+    for (var prec = 0; prec > n + 30; prec = (prec * 3) ~/ 2 - 16) {
+      final msd = this.msd(prec);
       if (msd != intMinValue) {
         return msd;
       }
-      CRealImpl.checkPrecision(n);
+      CRealImpl.checkPrecision(prec);
     }
-    return msd(p);
+    return msd(n);
   }
 
   @override
@@ -299,11 +300,6 @@ abstract class CRealImpl implements CReal {
       }
     }
     return result;
-  }
-
-  @override
-  String toString() {
-    return toStringPrecision(15);
   }
 
   static int boundLog2(int n) {
