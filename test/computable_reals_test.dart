@@ -18,6 +18,11 @@ void main() {
         expect(cr.toStringAsPrecision(8), s.value);
       });
     }
+    test('cannot parse NaN or Infinity', () {
+      expect(() => CReal.from(double.nan), throwsArgumentError);
+      expect(() => CReal.from(double.infinity), throwsArgumentError);
+      expect(() => CReal.from(double.negativeInfinity), throwsArgumentError);
+    });
   });
   group('parse', () {
     const m = {
@@ -37,6 +42,12 @@ void main() {
         expect(cr.toStringAsPrecision(e.value), e.key);
       });
     }
+    test('fails when invalid string', () {
+      // TODO: use fuzzing here?
+      expect(() => CReal.parse('adsfg'), throwsFormatException);
+      expect(() => CReal.parse('1234fff'), throwsFormatException);
+      expect(() => CReal.parse('2aa13.3100ff'), throwsFormatException);
+    });
   });
 
   group('graph', () {
@@ -46,7 +57,7 @@ void main() {
       (cr(1) / cr(100)).sqrt(): '0.1'
     };
     for (var e in m.entries) {
-      test(e.key.toStringAsPrecision(5), () {
+      test(e.key.toString(), () {
         expect(e.key.toStringAsPrecision(2), e.value);
       });
     }
@@ -54,13 +65,19 @@ void main() {
 
   group('floating point errors', () {
     final m = {
-      CReal.parse('0.1') + CReal.parse('0.2'): '0.30000000000000000000'
+      CReal.parse('0.1') + CReal.parse('0.2'): '0.30000000000000000000',
     };
     for (var e in m.entries) {
-      test(e.key.toStringAsPrecision(5), () {
+      test(e.key.toString(), () {
         expect(e.key.toStringAsPrecision(20, 10, true), e.value);
       });
     }
+    test('from double is still inaccurate', () {
+      var cr = CReal.from(0.1) + CReal.from(0.2);
+
+      expect(cr.toStringAsPrecision(20, 10, true),
+          isNot('0.30000000000000000000'));
+    });
   });
 
   group('operators', () {
@@ -124,7 +141,7 @@ void main() {
         cr(1) / cr(2) * CReal.pi + cr(3) * CReal.pi: '0'
       };
       for (var e in m.entries) {
-        test(e.key.toStringAsPrecision(5), () {
+        test(e.key.toString(), () {
           expect(e.key.cos().toStringAsPrecision(0), e.value);
         });
       }
@@ -137,7 +154,7 @@ void main() {
         cr(8008): '-0.99677560117552725167',
       };
       for (var e in a.entries) {
-        test(e.key.toStringAsPrecision(5), () {
+        test(e.key.toString(), () {
           expect(e.key.cos().toStringAsPrecision(20, 10, true), e.value);
         });
       }
@@ -153,7 +170,7 @@ void main() {
         cr(2) * CReal.pi + cr(1) / cr(2) * CReal.pi: '1',
       };
       for (var e in m.entries) {
-        test(e.key.toStringAsPrecision(5), () {
+        test(e.key.toString(), () {
           expect(e.key.sin().toStringAsPrecision(0), e.value);
         });
       }
@@ -165,7 +182,7 @@ void main() {
         CReal.parse('0.4321'): '0.41877870990075814929'
       };
       for (var e in a.entries) {
-        test(e.key.toStringAsPrecision(5), () {
+        test(e.key.toString(), () {
           expect(e.key.sin().toStringAsPrecision(20, 10, true), e.value);
         });
       }
@@ -191,7 +208,7 @@ void main() {
         cr(-10): '-0.64836082745908667126',
       };
       for (var e in a.entries) {
-        test(e.key.toStringAsPrecision(5), () {
+        test(e.key.toString(), () {
           expect(e.key.tan().toStringAsPrecision(20, 10, true), e.value);
         });
       }

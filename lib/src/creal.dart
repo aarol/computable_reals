@@ -51,9 +51,16 @@ abstract class CReal {
   CReal cos();
   CReal tan();
 
+  /// Returns a string accurate to `precision` places right of the decimal point.
+  /// by default, trailing zeroes after the decimal point are removed, eg.
+  ///
+  ///     print(CReal.parse('1.5').toStringAsPrecision(10)); // '1.5'
+  ///     print(CReal.parse('1.5').toStringAsPrecision(10, 10, true)); // '1.5000000000'
   String toStringAsPrecision(int precision,
       [int radix = 10, bool trailingZeroes = false]);
 
+  /// Approximates the value to 10 digits of precision by calling `toStringAsPrecision,
+  /// with trailing zeroes after decimal point removed.
   @override
   String toString() {
     return toStringAsPrecision(10);
@@ -69,11 +76,14 @@ abstract class CRealImpl implements CReal {
   BigInt? maxApproximation;
   bool isApproximationValid = false;
 
-  factory CRealImpl.from(num i) {
-    if (i is double) {
+  factory CRealImpl.from(num input) {
+    if (input is double) {
+      if (input.isNaN || input.isInfinite) {
+        throw ArgumentError.value(input, 'input');
+      }
       // We need to access the floating point representation
       var bd = ByteData(8);
-      bd.setFloat64(0, i.abs());
+      bd.setFloat64(0, input.abs());
       var bits = bd.getInt64(0);
       var mantissa = (bits & 0xfffffffffffff);
       var biasedExp = bits >> 52;
@@ -84,9 +94,9 @@ abstract class CRealImpl implements CReal {
         mantissa <<= 1;
       }
       var result = IntCReal(BigInt.from(mantissa)).shiftLeft(exp);
-      return i.isNegative ? result.negate() : result;
+      return input.isNegative ? result.negate() : result;
     } else {
-      return IntCReal(BigInt.from(i));
+      return IntCReal(BigInt.from(input));
     }
   }
 
