@@ -15,11 +15,11 @@ void main() {
     for (var s in m.entries) {
       test(s.key, () {
         var cr = CReal.from(s.key);
-        expect(cr.toStringPrecision(8), s.value);
+        expect(cr.toStringAsPrecision(8), s.value);
       });
     }
   });
-  group('fromString', () {
+  group('parse', () {
     const m = {
       // Exact input/output : Precision
       '15': 0,
@@ -34,7 +34,7 @@ void main() {
     for (var e in m.entries) {
       test(e.key, () {
         var cr = CReal.parse(e.key);
-        expect(cr.toStringPrecision(e.value), e.key);
+        expect(cr.toStringAsPrecision(e.value), e.key);
       });
     }
   });
@@ -46,8 +46,8 @@ void main() {
       (cr(1) / cr(100)).sqrt(): '0.1'
     };
     for (var e in m.entries) {
-      test(e.key.toStringPrecision(5), () {
-        expect(e.key.toStringPrecision(2), e.value);
+      test(e.key.toStringAsPrecision(5), () {
+        expect(e.key.toStringAsPrecision(2), e.value);
       });
     }
   });
@@ -57,8 +57,8 @@ void main() {
       CReal.parse('0.1') + CReal.parse('0.2'): '0.30000000000000000000'
     };
     for (var e in m.entries) {
-      test(e.key.toStringPrecision(5), () {
-        expect(e.key.toStringPrecision(20, 10, true), e.value);
+      test(e.key.toStringAsPrecision(5), () {
+        expect(e.key.toStringAsPrecision(20, 10, true), e.value);
       });
     }
   });
@@ -67,7 +67,7 @@ void main() {
     group('sqrt', () {
       test('throws when negative', () {
         var cr = CReal.from(-9).sqrt();
-        expect(() => cr.toStringPrecision(0), throwsException);
+        expect(() => cr.toStringAsPrecision(0), throwsException);
       });
       const ints = {
         9: "3",
@@ -77,7 +77,7 @@ void main() {
       for (var e in ints.entries) {
         test('int ${e.key}', () {
           var cr = CReal.from(e.key);
-          expect(cr.sqrt().toStringPrecision(0), e.value);
+          expect(cr.sqrt().toStringAsPrecision(0), e.value);
         });
       }
       const doubles = {
@@ -88,7 +88,7 @@ void main() {
       for (var e in doubles.entries) {
         test('double ${e.key}', () {
           var cr = CReal.from(e.key).sqrt();
-          expect(cr.toStringPrecision(5), e.value);
+          expect(cr.toStringAsPrecision(5), e.value);
         });
       }
     });
@@ -99,19 +99,19 @@ void main() {
       test('15 digits', () {
         var cr = CReal.pi;
         var expected = "3.141592653589793";
-        expect(cr.toStringPrecision(15), expected);
+        expect(cr.toStringAsPrecision(15), expected);
       });
       test('300 digits', () {
         var cr = CReal.pi;
         var expected =
             "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141274";
-        expect(cr.toStringPrecision(300), expected);
+        expect(cr.toStringAsPrecision(300), expected);
       });
       test('1/(Pi*1000)', () {
         var cr = CReal.from(1) / (CReal.pi * CReal.from(1000));
         var expected =
             "0.0003183098861837906715377675267450287240689192914809128974953347";
-        expect(cr.toStringPrecision(64), expected);
+        expect(cr.toStringAsPrecision(64), expected);
       });
     });
     group('cos', () {
@@ -124,8 +124,8 @@ void main() {
         cr(1) / cr(2) * CReal.pi + cr(3) * CReal.pi: '0'
       };
       for (var e in m.entries) {
-        test(e.key.toStringPrecision(5), () {
-          expect(e.key.cos().toStringPrecision(0), e.value);
+        test(e.key.toStringAsPrecision(5), () {
+          expect(e.key.cos().toStringAsPrecision(0), e.value);
         });
       }
 
@@ -137,8 +137,8 @@ void main() {
         cr(8008): '-0.99677560117552725167',
       };
       for (var e in a.entries) {
-        test(e.key.toStringPrecision(5), () {
-          expect(e.key.cos().toStringPrecision(20, 10, true), e.value);
+        test(e.key.toStringAsPrecision(5), () {
+          expect(e.key.cos().toStringAsPrecision(20, 10, true), e.value);
         });
       }
     });
@@ -153,8 +153,8 @@ void main() {
         cr(2) * CReal.pi + cr(1) / cr(2) * CReal.pi: '1',
       };
       for (var e in m.entries) {
-        test(e.key.toStringPrecision(5), () {
-          expect(e.key.sin().toStringPrecision(0), e.value);
+        test(e.key.toStringAsPrecision(5), () {
+          expect(e.key.sin().toStringAsPrecision(0), e.value);
         });
       }
 
@@ -165,8 +165,8 @@ void main() {
         CReal.parse('0.4321'): '0.41877870990075814929'
       };
       for (var e in a.entries) {
-        test(e.key.toStringPrecision(5), () {
-          expect(e.key.sin().toStringPrecision(20, 10, true), e.value);
+        test(e.key.toStringAsPrecision(5), () {
+          expect(e.key.sin().toStringAsPrecision(20, 10, true), e.value);
         });
       }
     });
@@ -180,7 +180,7 @@ void main() {
       };
       for (var e in m.entries) {
         test(e.key.toString(), () {
-          expect(e.key.tan().toStringPrecision(4), e.value);
+          expect(e.key.tan().toStringAsPrecision(4), e.value);
         });
       }
 
@@ -191,8 +191,8 @@ void main() {
         cr(-10): '-0.64836082745908667126',
       };
       for (var e in a.entries) {
-        test(e.key.toStringPrecision(5), () {
-          expect(e.key.tan().toStringPrecision(20, 10, true), e.value);
+        test(e.key.toStringAsPrecision(5), () {
+          expect(e.key.tan().toStringAsPrecision(20, 10, true), e.value);
         });
       }
     });

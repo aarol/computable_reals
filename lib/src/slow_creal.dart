@@ -4,22 +4,18 @@ import 'creal.dart';
 import 'functions.dart';
 
 abstract class SlowCReal extends CRealImpl {
-  static const maxPrecision = -64;
-  static const precisionIncr = 32;
-
-  static final one = CRealImpl.from(1);
+  static int maxPrecision = -64;
+  static int precIncr = 32;
 
   @override
   BigInt getApproximation(int p) {
     CRealImpl.checkPrecision(p);
-    if (maxApproximation != null &&
-        isApproximationValid &&
-        (minimumPrecision != null && p >= minimumPrecision!)) {
+    if (isApproximationValid && (p >= minimumPrecision!)) {
       return CRealImpl.scale(maxApproximation!, minimumPrecision! - p);
     } else {
       final evalPrecision = p >= maxPrecision
           ? maxPrecision
-          : (p - precisionIncr + 1) & ~(precisionIncr - 1);
+          : (p - precIncr + 1) & ~(precIncr - 1);
       final result = approximate(evalPrecision);
       minimumPrecision = evalPrecision;
       maxApproximation = result;
@@ -34,7 +30,7 @@ class GLPiCReal extends SlowCReal {
   var bVal = <BigInt?>[null];
 
   static final tolerance = BigInt.from(4);
-  static final sqrtHalf = SqrtCReal(SlowCReal.one.shiftRight(1));
+  static final sqrtHalf = SqrtCReal(CRealImpl.from(1).shiftRight(1));
 
   @override
   BigInt approximate(int p) {
@@ -83,8 +79,8 @@ class GLPiCReal extends SlowCReal {
 }
 
 class PrescaledCosCReal extends SlowCReal {
-  PrescaledCosCReal(this.x);
-  final CRealImpl x;
+  PrescaledCosCReal(this.op);
+  final CRealImpl op;
 
   @override
   BigInt approximate(int p) {
@@ -92,17 +88,23 @@ class PrescaledCosCReal extends SlowCReal {
       return BigInt.zero;
     }
     final iterationsNeeded = (-p / 2 + 4).floor();
+    // conservative estimate > 0.
+    //  Claim: each intermediate term is accurate
+    //  to 2*2^calc_precision.
+    //  Total rounding error in series computation is
+    //  2*iterations_needed*2^calc_precision,
+    //  exclusive of error in op.
     final calcPrecision = p - CRealImpl.boundLog2(2 * iterationsNeeded) - 4;
-    final xPrecision = p - 2;
-    final xApproximation = x.getApproximation(xPrecision);
+    final opPrecision = p - 2;
+    final opApproximation = op.getApproximation(opPrecision);
     final maxTruncError = BigInt.one << (p - 4 - calcPrecision);
     var n = BigInt.zero;
-    var currentTerm = BigInt.one << -calcPrecision;
+    var currentTerm = BigInt.one << (-calcPrecision);
     var currentSum = currentTerm;
     while (currentTerm.abs() >= maxTruncError) {
       n += BigInt.two;
-      currentTerm = CRealImpl.scale(currentTerm * xApproximation, xPrecision);
-      currentTerm = CRealImpl.scale(currentTerm * xApproximation, xPrecision);
+      currentTerm = CRealImpl.scale(currentTerm * opApproximation, opPrecision);
+      currentTerm = CRealImpl.scale(currentTerm * opApproximation, opPrecision);
       final divisor = -n * (n - BigInt.one);
       currentTerm ~/= divisor;
       currentSum += currentTerm;

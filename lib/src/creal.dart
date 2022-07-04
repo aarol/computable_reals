@@ -21,11 +21,17 @@ import 'values.dart';
 /// a description which describes the exact answer, and can be used to
 /// later approximate it to arbitrary precision.
 ///
-/// Calling toStringPrecision(20) will evaluate the CReal recursively for up to
-/// 20 digits
+/// Calling toStringPrecision(20) will compute the CReal recursively for up to
+/// 20 digits of accuracy.
 abstract class CReal {
+  /// Create a CReal from `num` i.
+  /// Constructing from a double is faster than using `.parse()`,
+  /// but will not be as accurate.
   factory CReal.from(num i) = CRealImpl.from;
+
   factory CReal.fromBigInt(BigInt i) = CRealImpl.fromBigInt;
+
+  /// Parse a number
   factory CReal.parse(String s) = CRealImpl.parse;
   CReal? tryParse(String s);
 
@@ -45,10 +51,15 @@ abstract class CReal {
   CReal cos();
   CReal tan();
 
-  String toStringPrecision(int precision,
+  String toStringAsPrecision(int precision,
       [int radix = 10, bool trailingZeroes = false]);
 
-  static CReal pi = GLPiCReal();
+  @override
+  String toString() {
+    return toStringAsPrecision(10);
+  }
+
+  static CReal pi = CRealImpl._pi;
 }
 
 abstract class CRealImpl implements CReal {
@@ -119,21 +130,15 @@ abstract class CRealImpl implements CReal {
   @override
   CRealImpl operator /(covariant CRealImpl x) => MultCReal(this, x.inverse());
 
-  CRealImpl inverse() {
-    return InvCReal(this);
-  }
+  CRealImpl inverse() => InverseCReal(this);
 
-  CRealImpl negate() {
-    return NegCReal(this);
-  }
+  CRealImpl negate() => NegativeCReal(this);
 
   @override
   CRealImpl operator -() => negate();
 
   @override
-  CRealImpl sqrt() {
-    return SqrtCReal(this);
-  }
+  CRealImpl sqrt() => SqrtCReal(this);
 
   CRealImpl shiftLeft(int n) {
     CRealImpl.checkPrecision(n);
@@ -153,10 +158,11 @@ abstract class CRealImpl implements CReal {
 
   @override
   CRealImpl cos() {
-    final halfPi = (this / CRealImpl._pi).getApproximation(-1);
-    if (halfPi.abs() >= BigInt.two) {
-      final piMultiplies = CRealImpl.scale(halfPi, -1);
-      final adjustment = CRealImpl._pi * CRealImpl.fromBigInt(piMultiplies);
+    final halfPiMultiplies = (this / CRealImpl._pi).getApproximation(-1);
+    final halfPiMultipliesAbs = halfPiMultiplies.abs();
+    if (halfPiMultipliesAbs >= BigInt.two) {
+      final piMultiplies = scale(halfPiMultiplies, -1);
+      final adjustment = CRealImpl._pi * (CRealImpl.fromBigInt(piMultiplies));
       if ((piMultiplies & BigInt.one) != BigInt.zero) {
         return (this - adjustment).cos().negate();
       } else {
@@ -176,9 +182,7 @@ abstract class CRealImpl implements CReal {
   }
 
   @override
-  CReal tan() {
-    return sin() / cos();
-  }
+  CReal tan() => sin() / cos();
 
   BigInt getApproximation(int p) {
     CRealImpl.checkPrecision(p);
@@ -224,6 +228,9 @@ abstract class CRealImpl implements CReal {
 
   BigInt approximate(int p);
 
+  ///Return the position of the most significant digit (msd).
+  /// If `x.msd() == n` then `2**(n-1) < abs(x) < 2**(n+1)`
+  /// This initial version assumes that `max_appr` is valid and sufficiently removed from zero that the msd is determined.
   int knownMsd() {
     int length;
     if (maxApproximation! >= BigInt.zero) {
@@ -263,14 +270,14 @@ abstract class CRealImpl implements CReal {
   }
 
   @override
-  String toStringPrecision(int precision,
+  String toStringAsPrecision(int precision,
       [int radix = 10, bool trailingZeroes = false]) {
     final scaleFactor = BigInt.from(radix).pow(precision);
     final scaledCReal = this * IntCReal(scaleFactor);
     final scaledInt = scaledCReal.getApproximation(0);
 
     if (scaledInt < BigInt.zero) {
-      return '-${negate().toStringPrecision(precision, radix, trailingZeroes)}';
+      return '-${negate().toStringAsPrecision(precision, radix, trailingZeroes)}';
     }
     String scaledString = scaledInt.toRadixString(radix);
     String result = "";
@@ -301,6 +308,9 @@ abstract class CRealImpl implements CReal {
     }
     return result;
   }
+
+  @override
+  String toString() => toStringAsPrecision(10);
 
   static int boundLog2(int n) {
     return (math.log(n.abs() + 1) / math.log(2)).ceil();

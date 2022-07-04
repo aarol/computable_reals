@@ -24,8 +24,10 @@ print(result.toStringPrecision(5)); // 0.33333
 * Addition, substraction, division, multiplication
 * Left/right shift
 * Square root
-* Sin, cos
+* Sin, cos, tan
 * PI
+
+!! Timeouts for some operations (tan) are not yet implemented.
 
 ## References
 
