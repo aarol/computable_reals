@@ -51,6 +51,7 @@ abstract class CReal {
 
   CReal sqrt();
   CReal ln();
+  CReal exp();
 
   CReal sin();
   CReal cos();
@@ -72,6 +73,8 @@ abstract class CReal {
   }
 
   static CReal pi = CRealImpl._pi;
+
+  static CReal e = CRealImpl._e;
 }
 
 abstract class CRealImpl implements CReal {
@@ -270,6 +273,19 @@ abstract class CRealImpl implements CReal {
     return simpleLn();
   }
 
+  /// Returns e ** this
+  @override
+  CReal exp() {
+    final lowPrec = -10;
+    final roughAppr = getApproximation(lowPrec);
+    if (roughAppr > BigInt.two || roughAppr < -BigInt.two) {
+      final squareRoot = shiftRight(1).exp();
+      return squareRoot * squareRoot;
+    } else {
+      return PrescaledExpCReal(this);
+    }
+  }
+
   BigInt getApproximation(int p) {
     CRealImpl.checkPrecision(p);
     if (isApproximationValid && p >= minimumPrecision!) {
@@ -404,4 +420,5 @@ abstract class CRealImpl implements CReal {
 
   static final _halfPi = _pi.shiftRight(1);
   static final _pi = GLPiCReal();
+  static final _e = CReal.from(1).exp();
 }

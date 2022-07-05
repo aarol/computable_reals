@@ -155,3 +155,40 @@ class PrescaledLnCReal extends SlowCReal {
     return CRealImpl.scale(currentSum, calcPrecision - p);
   }
 }
+
+/// Representation of the exponential of a constructive real.  Private.
+/// Uses a Taylor series expansion.  Assumes |x| < 1/2.
+/// Note: this is known to be a bad algorithm for
+/// floating point.  Unfortunately, other alternatives
+/// appear to require precomputed information.
+class PrescaledExpCReal extends CRealImpl {
+  PrescaledExpCReal(this.x);
+  final CRealImpl x;
+
+  @override
+  BigInt approximate(int p) {
+    if (p >= 1) return BigInt.zero;
+    final iterNeeded = -p ~/ 2 + 2;
+    // Claim: each intermediate term is accurate
+    // to 2*2^calc_precision.
+    // Total rounding error in series computation is
+    // 2*iterations_needed*2^calc_precision,
+    // exclusive of error in op.
+    final calcPrecision = p - CRealImpl.boundLog2(2 * iterNeeded) - 4;
+    final opPrecison = p - 3;
+    final opAppr = x.getApproximation(opPrecison);
+
+    final scaled1 = BigInt.one << -calcPrecision;
+    var currentTerm = scaled1;
+    var currentSum = scaled1;
+    var n = 0;
+    final maxTruncError = BigInt.one << (p - 4 - calcPrecision);
+    while (currentTerm.abs() >= maxTruncError) {
+      n += 1;
+      currentTerm = CRealImpl.scale(currentTerm * opAppr, opPrecison);
+      currentTerm ~/= BigInt.from(n);
+      currentSum += currentTerm;
+    }
+    return CRealImpl.scale(currentSum, calcPrecision - p);
+  }
+}
