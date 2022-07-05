@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:math' as math;
 
 import 'computable_reals_base.dart';
+import 'exception.dart';
 import 'functions.dart';
 import 'operators.dart';
 import 'slow_creal.dart';
@@ -251,7 +252,7 @@ abstract class CRealImpl implements CReal {
     final lowPrec = -4;
     final roughAppr = getApproximation(lowPrec);
     if (roughAppr.isNegative) {
-      throw Exception("ln(negative)");
+      throw ArithmeticException(this, "ln", "negative");
     }
     if (roughAppr <= CRealImpl._lowLnLimit) {
       return inverse().ln().negate();
@@ -287,7 +288,7 @@ abstract class CRealImpl implements CReal {
     final high = p >> 28;
     final highShifted = p >> 29;
     if (0 != (high ^ highShifted)) {
-      throw Exception('precision overflow');
+      throw ArithmeticException(null, 'checkPrecision', 'precision overflow');
     }
   }
 

@@ -84,7 +84,8 @@ void main() {
     group('sqrt', () {
       test('throws when negative', () {
         var cr = CReal.from(-9).sqrt();
-        expect(() => cr.toStringAsPrecision(0), throwsException);
+        expect(() => cr.toStringAsPrecision(0),
+            throwsA(isA<ArithmeticException>()));
       });
       const ints = {
         9: "3",
@@ -223,6 +224,23 @@ void main() {
           expect(e.key.tan().toStringAsPrecision(20, 10, true), e.value);
         });
       }
+    });
+    group('ln', () {
+      final m = {
+        cr(1): '0',
+        //TODO: CReal.e: 1,
+        cr(100): '4.60517018598809136804',
+        cr(100000000000): '25.3284360229345025242',
+      };
+      for (var e in m.entries) {
+        test(e.key.toString(), () {
+          expect(e.key.ln().toStringAsPrecision(20), e.value);
+        });
+      }
+      test('throws when negative', () {
+        var cr = CReal.from(-1);
+        expect(() => cr.ln().toString(), throwsA(isA<ArithmeticException>()));
+      });
     });
   });
 }

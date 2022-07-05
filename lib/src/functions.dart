@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'exception.dart';
 import 'creal.dart';
 
 class SqrtCReal extends CRealImpl {
@@ -45,7 +46,7 @@ class SqrtCReal extends CRealImpl {
           (x.getApproximation(operatorPrecision) << fpOperatorPrecision)
               .toDouble();
       if (scaledAppr < 0) {
-        throw Exception('sqrt(negative)');
+        throw ArithmeticException(this, 'sqrt', 'negative');
       }
       final scaledFpSqrt = sqrt(scaledAppr);
       final scaledSqrt = BigInt.from(scaledFpSqrt);
