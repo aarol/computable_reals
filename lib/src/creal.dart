@@ -46,7 +46,11 @@ abstract class CReal {
   CReal operator <<(int n);
   CReal operator >>(int n);
 
+  CReal abs();
+
   CReal sqrt();
+  CReal ln();
+
   CReal sin();
   CReal cos();
   CReal tan();
@@ -193,6 +197,77 @@ abstract class CRealImpl implements CReal {
 
   @override
   CReal tan() => sin() / cos();
+
+  int signum(int? a) {
+    if (a == null) {
+      for (var i = -20;; i *= 2) {
+        CRealImpl.checkPrecision(i);
+        final result = signum(i);
+        if (result != 0) {
+          return result;
+        }
+      }
+    } else {
+      if (isApproximationValid) {
+        if (maxApproximation != BigInt.zero) {
+          return maxApproximation! > BigInt.zero ? 1 : -1;
+        }
+      }
+      final thisAprr = getApproximation(a - 1);
+      return thisAprr.sign;
+    }
+  }
+
+  CRealImpl select(CRealImpl x, CRealImpl y) => SelectCReal(this, x, y);
+
+  @override
+  CReal abs() => select(-this, this);
+
+  CRealImpl simpleLn() => PrescaledLnCReal(this - CRealImpl.from(1));
+
+  static final _lowLnLimit = BigInt.from(8);
+  static final _highLnLimit = BigInt.from(16 + 8);
+  static final _scaled4 = BigInt.from(4 * 16);
+
+  /// Natural log of 2.
+  ///
+  /// `ln(2) = 7*ln(10/9) - 2*ln(25/24) + 3*ln(81/80)`.
+  ///
+  /// @type {CReal}
+  ///
+  CRealImpl get _ln2 {
+    var a =
+        CRealImpl.from(7) * (CRealImpl.from(10) / CRealImpl.from(9)).simpleLn();
+    var b = CRealImpl.from(2) *
+        (CRealImpl.from(25) / CRealImpl.from(24)).simpleLn();
+    var c = CRealImpl.from(3) *
+        (CRealImpl.from(81) / CRealImpl.from(80)).simpleLn();
+
+    return a - b + c;
+  }
+
+  @override
+  CRealImpl ln() {
+    final lowPrec = -4;
+    final roughAppr = getApproximation(lowPrec);
+    if (roughAppr.isNegative) {
+      throw Exception("ln(negative)");
+    }
+    if (roughAppr <= CRealImpl._lowLnLimit) {
+      return inverse().ln().negate();
+    }
+    if (roughAppr >= CRealImpl._highLnLimit) {
+      if (roughAppr <= CRealImpl._scaled4) {
+        final quarter = sqrt().sqrt().ln();
+        return quarter.shiftLeft(2);
+      } else {
+        final extraBits = roughAppr.bitLength - 3;
+        final scaledResult = shiftRight(extraBits).ln();
+        return scaledResult + (CRealImpl.from(extraBits) * _ln2);
+      }
+    }
+    return simpleLn();
+  }
 
   BigInt getApproximation(int p) {
     CRealImpl.checkPrecision(p);

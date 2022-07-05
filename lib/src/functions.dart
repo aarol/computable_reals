@@ -54,3 +54,39 @@ class SqrtCReal extends CRealImpl {
     }
   }
 }
+
+/// Returns x if selector < 0, else y.
+///
+/// Assumes x = y if selector = 0.
+class SelectCReal extends CRealImpl {
+  SelectCReal(this.selector, this.x, this.y)
+      : selectorSign = selector.getApproximation(-20).sign;
+  final CRealImpl selector;
+  final CRealImpl x;
+  final CRealImpl y;
+  int selectorSign;
+
+  @override
+  BigInt approximate(int p) {
+    if (selectorSign < 0) {
+      return x.getApproximation(p);
+    } else if (selectorSign > 0) {
+      return y.getApproximation(p);
+    }
+    final xAppr = x.getApproximation(p - 1);
+    final yAppr = y.getApproximation(p - 1);
+    final diff = (xAppr - yAppr).abs();
+    if (diff <= BigInt.one) {
+      return CRealImpl.scale(xAppr, -1);
+    }
+    //op1 and op2 are different; selector != 0.
+    // Safe to get sign of selector.
+    if (selector.signum(null) < 0) {
+      selectorSign = -1;
+      return CRealImpl.scale(xAppr, -1);
+    } else {
+      selectorSign = 0;
+      return CRealImpl.scale(yAppr, -1);
+    }
+  }
+}

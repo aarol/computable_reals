@@ -109,6 +109,17 @@ void main() {
         });
       }
     });
+    group('abs', () {
+      var expected = cr(100);
+      test('with negative', () {
+        var cr = CReal.from(-100);
+        expect(cr.abs().toString(), expected.toString());
+      });
+      test('with positive', () {
+        var cr = CReal.from(100);
+        expect(cr.abs().toString(), expected.toString());
+      });
+    });
   });
 
   group('SlowCReal', () {

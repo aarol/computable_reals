@@ -112,3 +112,46 @@ class PrescaledCosCReal extends SlowCReal {
     return CRealImpl.scale(currentSum, calcPrecision - p);
   }
 }
+
+/// Representation for ln(1+op)
+class PrescaledLnCReal extends SlowCReal {
+  PrescaledLnCReal(this.x);
+  final CRealImpl x;
+
+  // Compute an approximation of ln(1+x) to precision
+  // prec. This assumes |x| < 1/2.
+  // It uses a Taylor series expansion.
+  // Unfortunately there appears to be no way to take
+  // advantage of old information.
+  // Note: this is known to be a bad algorithm for
+  // floating point.  Unfortunately, other alternatives
+  // appear to require precomputed tabular information.
+  @override
+  BigInt approximate(int p) {
+    if (p >= 0) {
+      BigInt.zero;
+    }
+    final iterNeeded = -p;
+    // Claim: each intermediate term is accurate
+    // to 2*2^calc_precision.  Total error is
+    // 2*iterations_needed*2^calc_precision
+    // exclusive of error in op.
+    final calcPrecision = p - CRealImpl.boundLog2(2 * iterNeeded);
+    final opPrec = p - 3;
+    final opAppr = x.getApproximation(opPrec);
+    var xNth = CRealImpl.scale(opAppr, opPrec - calcPrecision);
+    var currentTerm = xNth;
+    var currentSum = currentTerm;
+    var n = BigInt.one;
+    var currentSign = BigInt.one;
+    final maxTruncError = BigInt.one << (p - 4 - calcPrecision);
+    while (currentTerm.abs() >= maxTruncError) {
+      n += BigInt.one;
+      currentSign = -currentSign;
+      xNth = CRealImpl.scale(xNth * opAppr, opPrec);
+      currentTerm = xNth ~/ (n * currentSign);
+      currentSum += currentTerm;
+    }
+    return CRealImpl.scale(currentSum, calcPrecision - p);
+  }
+}
