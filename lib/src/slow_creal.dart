@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'timeout.dart';
+
 import 'creal.dart';
 import 'functions.dart';
 
@@ -45,7 +47,9 @@ class GLPiCReal extends SlowCReal {
     var b = sqrtHalf.getApproximation(evalPrecision);
     var t = BigInt.one << (-evalPrecision - 2);
     var n = 0;
+    final timeout = Timeout();
     while (a - b - tolerance > BigInt.zero) {
+      timeout.check();
       final nextA = (a + b) >> 1;
       BigInt nextB;
       final aDiff = a - nextA;
@@ -101,7 +105,9 @@ class PrescaledCosCReal extends SlowCReal {
     var n = BigInt.zero;
     var currentTerm = BigInt.one << (-calcPrecision);
     var currentSum = currentTerm;
+    final timeout = Timeout();
     while (currentTerm.abs() >= maxTruncError) {
+      timeout.check();
       n += BigInt.two;
       currentTerm = CRealImpl.scale(currentTerm * opApproximation, opPrecision);
       currentTerm = CRealImpl.scale(currentTerm * opApproximation, opPrecision);
@@ -145,7 +151,9 @@ class PrescaledLnCReal extends SlowCReal {
     var n = BigInt.one;
     var currentSign = BigInt.one;
     final maxTruncError = BigInt.one << (p - 4 - calcPrecision);
+    final timeout = Timeout();
     while (currentTerm.abs() >= maxTruncError) {
+      timeout.check();
       n += BigInt.one;
       currentSign = -currentSign;
       xNth = CRealImpl.scale(xNth * opAppr, opPrec);
@@ -183,7 +191,9 @@ class PrescaledExpCReal extends CRealImpl {
     var currentSum = scaled1;
     var n = 0;
     final maxTruncError = BigInt.one << (p - 4 - calcPrecision);
+    final timeout = Timeout();
     while (currentTerm.abs() >= maxTruncError) {
+      timeout.check();
       n += 1;
       currentTerm = CRealImpl.scale(currentTerm * opAppr, opPrecison);
       currentTerm ~/= BigInt.from(n);
@@ -244,7 +254,9 @@ class PrescaledAsinCReal extends SlowCReal {
     // before division by the exponent.
     // Accurate to 3 ulp at calc_precision.
     var currentSum = currentTerm;
+    final timeout = Timeout();
     while (currentTerm.abs() >= maxLastTerm) {
+      timeout.check();
       exp += 2;
       currentFactor *= BigInt.from(exp - 2);
       currentFactor = CRealImpl.scale(currentFactor * opAppr, opPrecision + 2);
