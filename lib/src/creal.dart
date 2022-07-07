@@ -8,14 +8,14 @@ import 'operators.dart';
 import 'slow_creal.dart';
 import 'values.dart';
 
-/// Constructive real numbers, also known as recursive, or computable reals.
+/// Computable real numbers, also known as recursive, or constructive reals.
 ///
 /// Each recursive real number is represented as an object that provides an
 /// approximation function for the real number.
 ///
 /// The approximation function guarantees that the generated approximation
 /// is accurate to the specified precision.
-/// Arithmetic operations on constructive reals produce new such objects;
+/// Arithmetic operations on computable reals produce new such objects;
 /// they typically do not perform any real computation.
 /// In this sense, arithmetic computations are exact: They produce
 /// a description which describes the exact answer, and can be used to
@@ -52,6 +52,12 @@ abstract class CReal {
   CReal abs();
 
   CReal sqrt();
+
+  /// The natural (base e) logarithm.
+  ///
+  /// The logarithm for any base 'a' can be calculated using `ln`:
+  ///
+  ///     log_a(x) = (ln x)/(ln a)
   CReal ln();
   CReal exp();
 
@@ -88,9 +94,9 @@ abstract class CReal {
     return toStringAsPrecision(10);
   }
 
-  static CReal pi = CRealImpl._pi;
+  static final CReal pi = CRealImpl._pi;
 
-  static CReal e = CRealImpl._e;
+  static final CReal e = CRealImpl._e;
 }
 
 abstract class CRealImpl implements CReal {
@@ -204,7 +210,7 @@ abstract class CRealImpl implements CReal {
       }
     } else if (getApproximation(-1).abs() >= BigInt.two) {
       final cosHalf = shiftRight(1).cos();
-      return (cosHalf * cosHalf).shiftLeft(1) - CRealImpl.from(1);
+      return (cosHalf * cosHalf).shiftLeft(1) - CRealImpl.one;
     } else {
       return PrescaledCosCReal(this);
     }
@@ -223,7 +229,7 @@ abstract class CRealImpl implements CReal {
     final roughAppr = getApproximation(-10);
     // 1/sqrt(2) + a bit
     if (roughAppr > BigInt.from(750)) {
-      final newArg = (CRealImpl.from(1) - (this * this)).sqrt();
+      final newArg = (CRealImpl.one - (this * this)).sqrt();
       return newArg.acos();
     } else if (roughAppr < -BigInt.from(750)) {
       return negate().asin().negate();
@@ -242,7 +248,7 @@ abstract class CRealImpl implements CReal {
   @override
   CReal atan() {
     final x2 = this * this;
-    final absSinAtan = (x2 / (CRealImpl.from(1) + x2)).sqrt();
+    final absSinAtan = (x2 / (CRealImpl.one + x2)).sqrt();
     // if `this` is negative, negative result should be returned
     final sinAtan = select(absSinAtan.negate(), absSinAtan);
     return sinAtan.asin();
@@ -276,19 +282,17 @@ abstract class CRealImpl implements CReal {
   @override
   CReal abs() => select(-this, this);
 
-  CRealImpl simpleLn() => PrescaledLnCReal(this - CRealImpl.from(1));
+  CRealImpl simpleLn() => PrescaledLnCReal(this - CRealImpl.one);
 
   static final _lowLnLimit = BigInt.from(8);
   static final _highLnLimit = BigInt.from(16 + 8);
   static final _scaled4 = BigInt.from(4 * 16);
 
   /// Natural log of 2.
-  ///
-  /// `ln(2) = 7*ln(10/9) - 2*ln(25/24) + 3*ln(81/80)`.
-  ///
-  /// @type {CReal}
-  ///
-  CRealImpl get _ln2 {
+  ///     ln(2) = 7*ln(10/9) - 2*ln(25/24) + 3*ln(81/80)
+  static final _ln2 = __ln2();
+
+  static CRealImpl __ln2() {
     var a =
         CRealImpl.from(7) * (CRealImpl.from(10) / CRealImpl.from(9)).simpleLn();
     var b = CRealImpl.from(2) *
@@ -304,7 +308,7 @@ abstract class CRealImpl implements CReal {
     final lowPrec = -4;
     final roughAppr = getApproximation(lowPrec);
     if (roughAppr.isNegative) {
-      throw ArithmeticException(this, "ln", "negative");
+      throw ArithmeticException(this, "ln", "value is negative");
     }
     if (roughAppr <= CRealImpl._lowLnLimit) {
       return inverse().ln().negate();
@@ -466,6 +470,8 @@ abstract class CRealImpl implements CReal {
   static int boundLog2(int n) {
     return (math.log(n.abs() + 1) / math.log(2)).ceil();
   }
+
+  static final one = CRealImpl.from(1);
 
   static final _halfPi = _pi.shiftRight(1);
   static final _pi = GLPiCReal();

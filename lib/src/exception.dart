@@ -11,8 +11,8 @@ class ArithmeticException implements Exception {
   String toString() {
     var valueString = '';
     if (value != null) {
-      valueString = 'on value' + value!.toStringAsPrecision(5);
+      valueString = ' on value ' + value!.toStringAsPrecision(5);
     }
-    return 'ArithmeticException: operation $operation failed $valueString: $reason';
+    return 'ArithmeticException: operation $operation failed$valueString: $reason';
   }
 }

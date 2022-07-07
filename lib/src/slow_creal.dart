@@ -30,7 +30,7 @@ class GLPiCReal extends SlowCReal {
   var bVal = <BigInt?>[null];
 
   static final tolerance = BigInt.from(4);
-  static final sqrtHalf = SqrtCReal(CRealImpl.from(1).shiftRight(1));
+  static final sqrtHalf = SqrtCReal(CRealImpl.one.shiftRight(1));
 
   @override
   BigInt approximate(int p) {

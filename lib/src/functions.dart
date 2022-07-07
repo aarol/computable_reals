@@ -46,7 +46,7 @@ class SqrtCReal extends CRealImpl {
           (x.getApproximation(operatorPrecision) << fpOperatorPrecision)
               .toDouble();
       if (scaledAppr < 0) {
-        throw ArithmeticException(this, 'sqrt', 'negative');
+        throw ArithmeticException(this, 'sqrt', 'value is negative');
       }
       final scaledFpSqrt = sqrt(scaledAppr);
       final scaledSqrt = BigInt.from(scaledFpSqrt);
