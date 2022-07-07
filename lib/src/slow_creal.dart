@@ -192,3 +192,74 @@ class PrescaledExpCReal extends CRealImpl {
     return CRealImpl.scale(currentSum, calcPrecision - p);
   }
 }
+
+/// Representation of the arcsine of a constructive real.  Private.
+/// Uses a Taylor series expansion.  Assumes |x| < (1/2)^(1/3).
+class PrescaledAsinCReal extends SlowCReal {
+  PrescaledAsinCReal(this.x);
+  final CRealImpl x;
+
+  @override
+  BigInt approximate(int p) {
+    // The Taylor series is the sum of x^(2n+1) * (2n)!/(4^n n!^2 (2n+1))
+    // Note that (2n)!/(4^n n!^2) is always less than one.
+    // (The denominator is effectively 2n*2n*(2n-2)*(2n-2)*...*2*2
+    // which is clearly > (2n)!)
+    // Thus all terms are bounded by x^(2n+1).
+    // Unfortunately, there's no easy way to prescale the argument
+    // to less than 1/sqrt(2), and we can only approximate that.
+    // Thus the worst case iteration count is fairly high.
+    // But it doesn't make much difference.
+    if (p >= 2) return BigInt.zero; // Never bigger than 4.
+    final iterNeeded = -3 * p ~/ 2 + 4;
+    // conservative estimate > 0.
+    // Follows from assumed bound on x and
+    // the fact that only every other Taylor
+    // Series term is present.
+
+    //  Claim: each intermediate term is accurate
+    //  to 2*2^calc_precision.
+    //  Total rounding error in series computation is
+    //  2*iterations_needed*2^calc_precision,
+    //  exclusive of error in op.
+    final calcPrecision = p - CRealImpl.boundLog2(2 * iterNeeded) - 4;
+    final opPrecision = p - 3;
+    final opAppr = x.getApproximation(opPrecision);
+    // Error in argument results in error of < 1/4 ulp.
+    // (Derivative is bounded by 2 in the specified range and we use
+    // 3 extra digits.)
+    // Ignoring the argument error, each term has an error of
+    // < 3ulps relative to calc_precision, which is more precise than p.
+    // Cumulative arithmetic rounding error is < 3/16 ulp (relative to p).
+    // Series truncation error < 2/16 ulp.  (Each computed term
+    // is at most 2/3 of last one, so some of remaining series <
+    // 3/2 * current term.)
+    // Final rounding error is <= 1/2 ulp.
+    // Thus final error is < 1 ulp (relative to p).
+    final maxLastTerm = BigInt.one << (p - 4 - calcPrecision);
+    var exp = 1;
+    var currentTerm = opAppr << (opPrecision - calcPrecision);
+    var currentFactor = currentTerm;
+    // Current scaled Taylor series term
+    // before division by the exponent.
+    // Accurate to 3 ulp at calc_precision.
+    var currentSum = currentTerm;
+    while (currentTerm.abs() >= maxLastTerm) {
+      exp += 2;
+      currentFactor *= BigInt.from(exp - 2);
+      currentFactor = CRealImpl.scale(currentFactor * opAppr, opPrecision + 2);
+      currentFactor *= opAppr;
+      final divisor = BigInt.from(exp - 1);
+      currentFactor ~/= divisor;
+      // Remove extra 2 bits.  1/2 ulp rounding error.
+      // Current_factor has original 3 ulp rounding error, which we
+      // reduced by 1, plus < 1 ulp new rounding error.
+      currentFactor = CRealImpl.scale(currentFactor, opPrecision - 2);
+      // Contributes 1 ulp error to sum plus at most 3 ulp
+      // from current_factor.
+      currentTerm = currentFactor ~/ BigInt.from(exp);
+      currentSum += currentTerm;
+    }
+    return CRealImpl.scale(currentSum, calcPrecision - p);
+  }
+}

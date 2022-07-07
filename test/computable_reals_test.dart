@@ -43,7 +43,6 @@ void main() {
       });
     }
     test('fails when invalid string', () {
-      // TODO: use fuzzing here?
       expect(() => CReal.parse('adsfg'), throwsFormatException);
       expect(() => CReal.parse('1234fff'), throwsFormatException);
       expect(() => CReal.parse('2aa13.3100ff'), throwsFormatException);
@@ -130,7 +129,7 @@ void main() {
       };
 
       for (var e in m.entries) {
-        test(e.toString(), () {
+        test(e.key.toString(), () {
           expect(e.key.exp().toStringAsPrecision(20), e.value);
         });
       }
@@ -247,10 +246,49 @@ void main() {
         });
       }
     });
+    group('asin', () {
+      final m = {
+        cr(0): '0',
+        cr(1): '1.57079632679489661923',
+        cr(0.5): '0.52359877559829887308',
+        cr(-1): '-1.57079632679489661923',
+      };
+      for (var e in m.entries) {
+        test(e.key.toString(), () {
+          expect(e.key.asin().toStringAsPrecision(20), e.value);
+        });
+      }
+    });
+    group('acos', () {
+      final m = {
+        cr(1): '0',
+        cr(0): '1.57079632679489661923',
+        cr(0.5): '1.04719755119659774616',
+        cr(-1): '3.14159265358979323846',
+      };
+      for (var e in m.entries) {
+        test(e.key.toString(), () {
+          expect(e.key.acos().toStringAsPrecision(20), e.value);
+        });
+      }
+    });
+    group('atan', () {
+      final m = {
+        cr(1): '0.78539816339744830962',
+        cr(0): '0',
+        CReal.pi: '1.26262725567891168344',
+        cr(-1): '-0.78539816339744830962',
+      };
+      for (var e in m.entries) {
+        test(e.key.toString(), () {
+          expect(e.key.atan().toStringAsPrecision(20), e.value);
+        });
+      }
+    });
     group('ln', () {
       final m = {
         cr(1): '0',
-        //TODO: CReal.e: 1,
+        CReal.e: '1',
         cr(100): '4.60517018598809136804',
         cr(100000000000): '25.3284360229345025242',
       };

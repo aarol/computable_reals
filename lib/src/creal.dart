@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'dart:math' as math;
 
 import 'computable_reals_base.dart';
-import 'exception.dart';
 import 'functions.dart';
 import 'operators.dart';
 import 'slow_creal.dart';
@@ -26,14 +25,18 @@ import 'values.dart';
 /// 20 digits of accuracy.
 abstract class CReal {
   /// Create a CReal from `num` i.
-  /// Constructing from a double is faster than using `.parse()`,
-  /// but will not be as accurate.
+  /// Converting from a double is faster than using `.parse()`,
+  /// but may be inaccurate due to floating point errors.
   factory CReal.from(num i) = CRealImpl.from;
 
   factory CReal.fromBigInt(BigInt i) = CRealImpl.fromBigInt;
 
-  /// Parse a number
+  /// Parse a string representation of a number into a CReal.
+  /// Throws `FormatException` when number parsing fails.
   factory CReal.parse(String s) = CRealImpl.parse;
+
+  /// Parse a string representation of a number into a CReal.
+  /// Instead of throwing on failure, returns null.
   CReal? tryParse(String s);
 
   CReal operator +(CReal x);
@@ -41,7 +44,6 @@ abstract class CReal {
   CReal operator *(CReal x);
   CReal operator /(CReal x);
 
-  /// Unary minus (negate)
   CReal operator -();
 
   CReal operator <<(int n);
@@ -53,9 +55,23 @@ abstract class CReal {
   CReal ln();
   CReal exp();
 
+  /// Sine of `this` in radians
   CReal sin();
+
+  /// Cosine of `this` in radians
   CReal cos();
+
+  /// Tangent of `this` in radians
   CReal tan();
+
+  /// Arc sine of `this` in radians
+  CReal asin();
+
+  /// Arc cosine of `this` in radians
+  CReal acos();
+
+  /// Arc tangent of `this` in radians
+  CReal atan();
 
   /// Returns a string accurate to `precision` places right of the decimal point.
   /// by default, trailing zeroes after the decimal point are removed, eg.
@@ -202,6 +218,36 @@ abstract class CRealImpl implements CReal {
   @override
   CReal tan() => sin() / cos();
 
+  @override
+  CRealImpl asin() {
+    final roughAppr = getApproximation(-10);
+    // 1/sqrt(2) + a bit
+    if (roughAppr > BigInt.from(750)) {
+      final newArg = (CRealImpl.from(1) - (this * this)).sqrt();
+      return newArg.acos();
+    } else if (roughAppr < -BigInt.from(750)) {
+      return negate().asin().negate();
+    } else {
+      return PrescaledAsinCReal(this);
+    }
+  }
+
+  @override
+  CRealImpl acos() {
+    return CRealImpl._halfPi - asin();
+  }
+
+  // (sin x)^2 = (tan x)^2/(1+(tan x)^2)
+  // atan(x) = asin(sqrt(x^2/(1+x^2)))
+  @override
+  CReal atan() {
+    final x2 = this * this;
+    final absSinAtan = (x2 / (CRealImpl.from(1) + x2)).sqrt();
+    // if `this` is negative, negative result should be returned
+    final sinAtan = select(absSinAtan.negate(), absSinAtan);
+    return sinAtan.asin();
+  }
+
   int signum(int? a) {
     if (a == null) {
       for (var i = -20;; i *= 2) {
@@ -222,6 +268,9 @@ abstract class CRealImpl implements CReal {
     }
   }
 
+  /// Returns x if this < 0, else y.
+  ///
+  /// Assumes x = y if this = 0.
   CRealImpl select(CRealImpl x, CRealImpl y) => SelectCReal(this, x, y);
 
   @override

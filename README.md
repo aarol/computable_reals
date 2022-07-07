@@ -36,13 +36,13 @@ print(CReal.pi.toStringAsPrecision(64));
 - Addition, substraction, division, multiplication
 - Left/right shift
 - Square root
-- Sin, cos, tan
+- Sin, cos, tan, asin, acos, atan
 - ln
 - PI, E
 
-!! Timeouts for some operations (tan) are not yet implemented.
+!! Timeouts for some operations are not yet implemented.
 
 ## References
 
 - Ported from creal.js: https://github.com/christianp/creal.js
-- android/calculator2: https://android-review.googlesource.com/c/platform/art/+/1012109
+- android/crcalc: https://android.googlesource.com/platform/external/crcalc/
