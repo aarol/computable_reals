@@ -142,6 +142,21 @@ void main() {
         expect(CReal.e.toStringAsPrecision(257, 10, true), e257);
       });
     });
+    group('pow', () {
+      final m = {
+        cr(1).pow(cr(1)): '1',
+        cr(2).pow(cr(4)): '16',
+        cr(1.5).pow(cr(2)): '2.25',
+        cr(60).pow(cr(5)): '777600000',
+        cr(60).pow(cr(-1)): '0.01666666666666666667',
+        CReal.e.pow(CReal.e): '15.15426224147926418976',
+      };
+      for (var e in m.entries) {
+        test(e.key, () {
+          expect(e.key.toStringAsPrecision(20), e.value);
+        });
+      }
+    });
   });
 
   group('SlowCReal', () {

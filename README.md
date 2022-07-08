@@ -37,10 +37,8 @@ print(CReal.pi.toStringAsPrecision(64));
 - Left/right shift
 - Square root
 - Sin, cos, tan, asin, acos, atan
-- ln
+- ln, exp, pow
 - PI, E
-
-!! Timeouts for some operations are not yet implemented.
 
 ## References
 

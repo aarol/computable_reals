@@ -60,6 +60,7 @@ abstract class CReal {
   ///     log_a(x) = (ln x)/(ln a)
   CReal ln();
   CReal exp();
+  CReal pow(CReal x);
 
   /// Sine of `this` in radians
   CReal sin();
@@ -337,6 +338,11 @@ abstract class CRealImpl implements CReal {
     } else {
       return PrescaledExpCReal(this);
     }
+  }
+
+  @override
+  CReal pow(covariant CRealImpl x) {
+    return (x * ln()).exp();
   }
 
   BigInt getApproximation(int p) {
