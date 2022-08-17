@@ -1,7 +1,8 @@
 name: computable_reals
-description: A starting point for Dart libraries or applications.
+description: Computable reals, or constructive real numbers in Dart. Approximates real numbers to arbitrary precision.
 version: 1.0.0
-# homepage: https://www.example.com
+repository: https://github.com/aarol/computable_reals
+issue_tracker: https://github.com/aarol/computable_reals/issues
 
 environment:
   sdk: '>=2.16.2 <3.0.0'
