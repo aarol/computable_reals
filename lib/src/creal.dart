@@ -59,7 +59,14 @@ abstract class CReal {
   ///
   ///     log_a(x) = (ln x)/(ln a)
   CReal ln();
+
+  /// The base 10 logarithm.
+  CReal log();
+
+  /// e^this
   CReal exp();
+
+  /// this^x
   CReal pow(CReal x);
 
   /// Sine of `this` in radians
@@ -282,6 +289,9 @@ abstract class CRealImpl implements CReal {
 
   @override
   CReal abs() => select(-this, this);
+
+  @override
+  CReal log() => ln() / CRealImpl.from(10).ln();
 
   CRealImpl simpleLn() => PrescaledLnCReal(this - CRealImpl.one);
 

@@ -317,5 +317,23 @@ void main() {
         expect(() => cr.ln().toString(), throwsA(isA<ArithmeticException>()));
       });
     });
+
+    group('log', () {
+      final m = {
+        cr(1): '0',
+        cr(10): '1',
+        cr(100): '2',
+        cr(100000000000): '11',
+      };
+      for (var e in m.entries) {
+        test(e.key.toString(), () {
+          expect(e.key.log().toStringAsPrecision(20), e.value);
+        });
+      }
+      test('throws when negative', () {
+        var cr = CReal.from(-1);
+        expect(() => cr.ln().toString(), throwsA(isA<ArithmeticException>()));
+      });
+    });
   });
 }
