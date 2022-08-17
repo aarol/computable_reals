@@ -30,18 +30,6 @@ void main() {
 }
 ```
 
-### Exceptions
-
-If using user input, some edge cases should be considered.
-* Approximation with `toString` and `toStringAsPrecision` may throw `ArithmeticException` (division by zero, etc.)
-* Some slower computations like PI implement timeouts and will throw `TimeoutException` after 3 seconds.
-
-### Why this package exists
-
-Regular floating point numbers are not completely accurate when converted to human-readable base-10 numbers. This is why in dart, `print(0.1+0.2) == "0.30000000000000004"`. This is a problem when higher precision is needed.
-
-Computable reals don't have this limitation, they are accurate for as many digits as needed. This is useful when calculations with higher precision are needed. Like the original `crcalc` java library, computable reals are especially useful when building calculator apps. This package tries to offer the same experience that the stock Android Calculator does. [video](https://aperiodical.com/wp-content/uploads/2022/03/MP4_20220302_141007-1.mp4) ([original post](https://aperiodical.com/2022/03/now-im-calculating-with-constructive-reals/))
-
 ### Supported operations
 
 - Addition, substraction, division, multiplication
@@ -50,6 +38,18 @@ Computable reals don't have this limitation, they are accurate for as many digit
 - Sin, cos, tan, asin, acos, atan
 - ln, log, exp, pow
 - PI, E
+
+### Exceptions
+
+If using user input, some edge cases should be considered.
+* Approximation with `toString` and `toStringAsPrecision` may throw `ArithmeticException` (division by zero, etc.)
+* Some slower computations like PI implement timeouts and will throw `TimeoutException` after 3 seconds.
+
+## Why this package exists
+
+Regular floating point numbers are not completely accurate when converted to human-readable base-10 numbers. This is why in dart, `print(0.1+0.2) == "0.30000000000000004"`. This is a problem when higher precision is needed.
+
+Computable reals don't have this limitation, they are accurate for as many digits as needed. This is useful when calculations with higher precision are needed. Like the original `crcalc` java library, computable reals are especially useful when building calculator apps. This package tries to offer the same experience that the stock Android Calculator does. [video](https://aperiodical.com/wp-content/uploads/2022/03/MP4_20220302_141007-1.mp4) ([original post](https://aperiodical.com/2022/03/now-im-calculating-with-constructive-reals/))
 
 ## References
 
